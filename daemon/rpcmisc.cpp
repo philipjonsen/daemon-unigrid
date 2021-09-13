@@ -8,6 +8,7 @@
 
 #include "base58.h"
 #include "clientversion.h"
+#include "frontendprops.h"
 #include "init.h"
 #include "main.h"
 #include "masternode-sync.h"
@@ -165,6 +166,31 @@ UniValue getinfo(const UniValue& params, bool fHelp)
     obj.push_back(Pair("errors", GetWarnings("statusbar")));
     return obj;
 }
+
+UniValue getfrontendinfo(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() != 0) {
+        throw runtime_error(
+            "getfrontendinfo \"logo\"\n"
+            "\nReturns an object containing various configuration properties for the frontend.\n"
+
+            "\nResult:\n"
+            "{\n"
+            "  \"resize-virtual-border-size\": \"width\",      (string) vitual border thickness for window resizing\n"
+            "  \"header-background\": \"background-property\", (string) css background property for headers\n"
+            "}\n"
+
+            "\nExamples:\n" +
+            HelpExampleCli("getfrontendinfo", "") + HelpExampleRpc("getfrontendinfo", ""));
+    }
+
+    UniValue obj(UniValue::VOBJ);
+
+    obj.push_back(Pair("resize-virtual-border-size", RESIZE_VIRTUAL_BORDER_SIZE));
+    obj.push_back(Pair("header-background", HEADER_BACKGROUND));
+    return obj;
+}
+
 
 UniValue mnsync(const UniValue& params, bool fHelp)
 {

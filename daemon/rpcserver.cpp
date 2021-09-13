@@ -276,10 +276,11 @@ UniValue stop(const UniValue& params, bool fHelp)
  */
 static const CRPCCommand vRPCCommands[] =
     {
-        //  category              name                      actor (function)         okSafeMode threadSafe reqWallet
-        //  --------------------- ------------------------  -----------------------  ---------- ---------- ---------
+        // category, name, actor (function), okSafeMode, threadSafe, reqWallet
+
         /* Overall control/query calls */
         {"control", "getinfo", &getinfo, true, false, false}, /* uses wallet if enabled */
+        {"control", "getfrontendinfo", &getfrontendinfo, true, true, false},
         {"control", "help", &help, true, true, false},
         {"control", "stop", &stop, true, true, false},
 

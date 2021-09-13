@@ -104,6 +104,7 @@ BITCOIN_CORE_H = \
   compat/sanity.h \
   compressor.h \
   downloader.h \
+  frontendprops.h \
   primitives/block.h \
   primitives/deterministicmint.h \
   primitives/transaction.h \
