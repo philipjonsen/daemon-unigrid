@@ -26,7 +26,7 @@ Check out the source code in the following directory hierarchy.
     git clone https://github.com/unigrid-project/gitian.sigs.git
     git clone https://github.com/unigrid-project/unigrid-detached-sigs.git
     git clone https://github.com/devrandom/gitian-builder.git
-    git clone https://github.com/unigrid-project/unigrid.git
+    git clone https://github.com/unigrid-project/daemon.git
 
 ### UNIGRID maintainers/release engineers, suggestion for writing release notes
 
