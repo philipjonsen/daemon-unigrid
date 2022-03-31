@@ -20,16 +20,20 @@ VM image to avoid 'contaminating' the build.
 Table of Contents
 ------------------
 
-- [Create a new VirtualBox VM](#create-a-new-virtualbox-vm)
-- [Connecting to the VM](#connecting-to-the-vm)
-- [Setting up Debian for gitian building](#setting-up-debian-for-gitian-building)
-- [Installing gitian](#installing-gitian)
-- [Setting up gitian images](#setting-up-gitian-images)
-- [Getting and building the inputs](#getting-and-building-the-inputs)
-- [Building UNIGRID](#building-unigrid)
-- [Building an alternative repository](#building-an-alternative-repository)
-- [Signing externally](#signing-externally)
-- [Uploading signatures](#uploading-signatures)
+- [Gitian building](#gitian-building)
+  - [Table of Contents](#table-of-contents)
+  - [Preparing the Gitian builder host](#preparing-the-gitian-builder-host)
+  - [Create a new VirtualBox VM](#create-a-new-virtualbox-vm)
+  - [Installing Debian](#installing-debian)
+  - [Connecting to the VM](#connecting-to-the-vm)
+  - [Setting up Debian for gitian building](#setting-up-debian-for-gitian-building)
+  - [Installing gitian](#installing-gitian)
+  - [Setting up gitian images](#setting-up-gitian-images)
+  - [Getting and building the inputs](#getting-and-building-the-inputs)
+  - [Building UNIGRID](#building-unigrid)
+  - [Building an alternative repository](#building-an-alternative-repository)
+  - [Signing externally](#signing-externally)
+  - [Uploading signatures (not yet implemented)](#uploading-signatures-not-yet-implemented)
 
 Preparing the Gitian builder host
 ---------------------------------
@@ -281,10 +285,17 @@ Clone the git repositories for unigrid and gitian and then checkout the unigrid 
 
 ```bash
 git clone https://github.com/devrandom/gitian-builder.git
-git clone https://github.com/unigrid-crypto/unigrid.git
-cd unigrid
+git clone https://github.com/unigrid-project/daemon.git
+cd daemon
 git checkout v${VERSION}
 cd ..
+```
+
+**Note**: gitian-builder has an invalid pointer to the Ubuntu repo. Inside the gitian-builder bin folder we can do a find and replace to fix this.
+
+```
+# find and replace
+sed -i 's/old-releases/archive/g' gitian-builder/bin/make-base-vm
 ```
 
 **Note**: if you've installed Gitian before May 16, 2015, please update to the latest version, see https://github.com/devrandom/gitian-builder/issues/86
@@ -294,7 +305,7 @@ Setting up gitian images
 -------------------------
 
 Gitian needs virtual images of the operating system to build in.
-Currently this is Ubuntu Precise for x86_64.
+Currently this is Ubuntu bionic for x86_64.
 These images will be copied and used every time that a build is started to
 make sure that the build is deterministic.
 Creating the images will take a while, but only has to be done once.
@@ -303,7 +314,7 @@ Execute the following as user `debian`:
 
 ```bash
 cd gitian-builder
-bin/make-base-vm --lxc --arch amd64 --suite precise
+bin/make-base-vm --lxc --arch amd64 --suite bionic
 ```
 
 There will be a lot of warnings printed during build of the images. These can be ignored.
@@ -323,8 +334,16 @@ Getting and building the inputs
 
 Follow the instructions in [doc/release-process.md](release-process.md) in the unigrid repository
 under 'Fetch and build inputs' to install sources which require manual intervention. Also follow
-the next step: 'Seed the Gitian sources cache', which will fetch all necessary source files allowing
-for gitian to work offline.
+the next step: 'Seed the Gitian sources cache', which will fetch all necessary source files allowing for gitian to work offline.
+
+**Note**: For OSX builds you will need the SDK inside inputs folder.
+
+```
+cd gitian-builder
+mkdir inputs
+cd inputs
+wget https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX10.11.sdk.tar.xz
+```
 
 Building UNIGRID
 ----------------
