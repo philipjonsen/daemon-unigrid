@@ -21,6 +21,7 @@
 #include <vector>
 #include "libzerocoin/Denominations.h"
 #include "libzerocoin/SpendType.h"
+#include "robinhood.h"
 
 class CScript;
 
@@ -638,11 +639,11 @@ void Unserialize(Stream& is, std::pair<K, T>& item, int nType, int nVersion);
  * map
  */
 template <typename K, typename T, typename Pred, typename A>
-unsigned int GetSerializeSize(const std::map<K, T, Pred, A>& m, int nType, int nVersion);
+unsigned int GetSerializeSize(const robin_hood::unordered_node_map<K, T, Pred, A>& m, int nType, int nVersion);
 template <typename Stream, typename K, typename T, typename Pred, typename A>
-void Serialize(Stream& os, const std::map<K, T, Pred, A>& m, int nType, int nVersion);
+void Serialize(Stream& os, const robin_hood::unordered_node_map<K, T, Pred, A>& m, int nType, int nVersion);
 template <typename Stream, typename K, typename T, typename Pred, typename A>
-void Unserialize(Stream& is, std::map<K, T, Pred, A>& m, int nType, int nVersion);
+void Unserialize(Stream& is, robin_hood::unordered_node_map<K, T, Pred, A>& m, int nType, int nVersion);
 
 /**
  * set
@@ -843,28 +844,28 @@ void Unserialize(Stream& is, std::pair<K, T>& item, int nType, int nVersion)
  * map
  */
 template <typename K, typename T, typename Pred, typename A>
-unsigned int GetSerializeSize(const std::map<K, T, Pred, A>& m, int nType, int nVersion)
+unsigned int GetSerializeSize(const robin_hood::unordered_node_map<K, T, Pred, A>& m, int nType, int nVersion)
 {
     unsigned int nSize = GetSizeOfCompactSize(m.size());
-    for (typename std::map<K, T, Pred, A>::const_iterator mi = m.begin(); mi != m.end(); ++mi)
+    for (typename robin_hood::unordered_node_map<K, T, Pred, A>::const_iterator mi = m.begin(); mi != m.end(); ++mi)
         nSize += GetSerializeSize((*mi), nType, nVersion);
     return nSize;
 }
 
 template <typename Stream, typename K, typename T, typename Pred, typename A>
-void Serialize(Stream& os, const std::map<K, T, Pred, A>& m, int nType, int nVersion)
+void Serialize(Stream& os, const robin_hood::unordered_node_map<K, T, Pred, A>& m, int nType, int nVersion)
 {
     WriteCompactSize(os, m.size());
-    for (typename std::map<K, T, Pred, A>::const_iterator mi = m.begin(); mi != m.end(); ++mi)
+    for (typename robin_hood::unordered_node_map<K, T, Pred, A>::const_iterator mi = m.begin(); mi != m.end(); ++mi)
         Serialize(os, (*mi), nType, nVersion);
 }
 
 template <typename Stream, typename K, typename T, typename Pred, typename A>
-void Unserialize(Stream& is, std::map<K, T, Pred, A>& m, int nType, int nVersion)
+void Unserialize(Stream& is, robin_hood::unordered_node_map<K, T, Pred, A>& m, int nType, int nVersion)
 {
     m.clear();
     unsigned int nSize = ReadCompactSize(is);
-    typename std::map<K, T, Pred, A>::iterator mi = m.begin();
+    typename robin_hood::unordered_node_map<K, T, Pred, A>::iterator mi = m.begin();
     for (unsigned int i = 0; i < nSize; i++) {
         std::pair<K, T> item;
         Unserialize(is, item, nType, nVersion);

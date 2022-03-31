@@ -19,6 +19,7 @@
 #include "wallet.h"
 #include "walletdb.h"
 #include "zpivchain.h"
+#include "robinhood.h"
 
 #include <stdint.h>
 
@@ -1267,7 +1268,7 @@ void ListTransactions(const CWalletTx& wtx, const string& strAccount, int nMinDe
                 entry.push_back(Pair("involvesWatchonly", true));
             entry.push_back(Pair("account", strSentAccount));
             MaybePushAddress(entry, s.destination);
-            std::map<std::string, std::string>::const_iterator it = wtx.mapValue.find("DS");
+            robin_hood::unordered_node_map<std::string, std::string>::const_iterator it = wtx.mapValue.find("DS");
             entry.push_back(Pair("category", (it != wtx.mapValue.end() && it->second == "1") ? "darksent" : "send"));
             entry.push_back(Pair("amount", ValueFromAmount(-s.amount)));
             entry.push_back(Pair("vout", s.vout));
@@ -2347,7 +2348,7 @@ UniValue printAddresses()
 {
     std::vector<COutput> vCoins;
     pwalletMain->AvailableCoins(vCoins);
-    std::map<std::string, double> mapAddresses;
+    robin_hood::unordered_node_map<std::string, double> mapAddresses;
     BOOST_FOREACH (const COutput& out, vCoins) {
         CTxDestination utxoAddress;
         ExtractDestination(out.tx->vout[out.i].scriptPubKey, utxoAddress);
@@ -2645,7 +2646,7 @@ UniValue listzerocoinamounts(const UniValue& params, bool fHelp)
     CWalletDB walletdb(pwalletMain->strWalletFile);
     set<CMintMeta> setMints = pwalletMain->zpivTracker->ListMints(true, true, true);
 
-    std::map<libzerocoin::CoinDenomination, CAmount> spread;
+    robin_hood::unordered_node_map<libzerocoin::CoinDenomination, CAmount> spread;
     for (const auto& denom : libzerocoin::zerocoinDenomList)
         spread.insert(std::pair<libzerocoin::CoinDenomination, CAmount>(denom, 0));
     for (auto& meta : setMints) spread.at(meta.denom)++;

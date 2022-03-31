@@ -11,6 +11,7 @@
 #include "txdb.h"
 #include "walletdb.h"
 #include "accumulators.h"
+#include "robinhood.h"
 
 using namespace std;
 
@@ -128,7 +129,7 @@ CAmount CzUNIGRIDTracker::GetBalance(bool fConfirmedOnly, bool fUnconfirmedOnly)
 {
     CAmount nTotal = 0;
     //! zerocoin specific fields
-    std::map<libzerocoin::CoinDenomination, unsigned int> myZerocoinSupply;
+    robin_hood::unordered_node_map<libzerocoin::CoinDenomination, unsigned int> myZerocoinSupply;
     for (auto& denom : libzerocoin::zerocoinDenomList) {
         myZerocoinSupply.insert(make_pair(denom, 0));
     }
@@ -452,7 +453,7 @@ std::set<CMintMeta> CzUNIGRIDTracker::ListMints(bool fUnusedOnly, bool fMatureOn
         mempool.getTransactions(setMempool);
     }
 
-    std::map<libzerocoin::CoinDenomination, int> mapMaturity = GetMintMaturityHeight();
+    robin_hood::unordered_node_map<libzerocoin::CoinDenomination, int> mapMaturity = GetMintMaturityHeight();
     for (auto& it : mapSerialHashes) {
         CMintMeta mint = it.second;
 

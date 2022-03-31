@@ -10,6 +10,7 @@
 #include "hash.h"
 #include "serialize.h"
 #include "streams.h"
+#include "robinhood.h"
 
 using namespace std;
 
@@ -78,12 +79,12 @@ double CAddrInfo::GetChance(int64_t nNow) const
 
 CAddrInfo* CAddrMan::Find(const CNetAddr& addr, int* pnId)
 {
-    std::map<CNetAddr, int>::iterator it = mapAddr.find(addr);
+    robin_hood::unordered_node_map<CNetAddr, int>::iterator it = mapAddr.find(addr);
     if (it == mapAddr.end())
         return NULL;
     if (pnId)
         *pnId = (*it).second;
-    std::map<int, CAddrInfo>::iterator it2 = mapInfo.find((*it).second);
+    robin_hood::unordered_node_map<int, CAddrInfo>::iterator it2 = mapInfo.find((*it).second);
     if (it2 != mapInfo.end())
         return &(*it2).second;
     return NULL;
@@ -377,12 +378,12 @@ CAddress CAddrMan::Select_()
 int CAddrMan::Check_()
 {
     std::set<int> setTried;
-    std::map<int, int> mapNew;
+    robin_hood::unordered_node_map<int, int> mapNew;
 
     if (vRandom.size() != nTried + nNew)
         return -7;
 
-    for (std::map<int, CAddrInfo>::iterator it = mapInfo.begin(); it != mapInfo.end(); it++) {
+    for (robin_hood::unordered_node_map<int, CAddrInfo>::iterator it = mapInfo.begin(); it != mapInfo.end(); it++) {
         int n = (*it).first;
         CAddrInfo& info = (*it).second;
         if (info.fInTried) {

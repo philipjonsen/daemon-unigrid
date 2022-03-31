@@ -9,13 +9,14 @@
 #include "libzerocoin/Accumulator.h"
 #include "libzerocoin/Coin.h"
 #include "accumulatorcheckpoints.h"
+#include "robinhood.h"
 
 //A map with an accumulator for each denomination
 class AccumulatorMap
 {
 private:
     libzerocoin::ZerocoinParams* params;
-    std::map<libzerocoin::CoinDenomination, std::unique_ptr<libzerocoin::Accumulator> > mapAccumulators;
+    robin_hood::unordered_node_map<libzerocoin::CoinDenomination, std::unique_ptr<libzerocoin::Accumulator> > mapAccumulators;
 public:
     explicit AccumulatorMap(libzerocoin::ZerocoinParams* params);
     bool Load(uint256 nCheckpoint);

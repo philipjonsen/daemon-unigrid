@@ -15,6 +15,7 @@
 #include "sporkdb.h"
 #include "sporknames.h"
 #include "util.h"
+#include "robinhood.h"
 #include <boost/lexical_cast.hpp>
 
 using namespace std;
@@ -25,8 +26,8 @@ class CSporkManager;
 
 CSporkManager sporkManager;
 
-std::map<uint256, CSporkMessage> mapSporks;
-std::map<int, CSporkMessage> mapSporksActive;
+robin_hood::unordered_node_map<uint256, CSporkMessage> mapSporks;
+robin_hood::unordered_node_map<int, CSporkMessage> mapSporksActive;
 
 // UNIGRID: on startup load spork values from previous session if they exist in the sporkDB
 void LoadSporksFromDB()
@@ -109,7 +110,7 @@ void ProcessSpork(CNode* pfrom, std::string& strCommand, CDataStream& vRecv)
         pSporkDB->WriteSpork(spork.nSporkID, spork);
     }
     if (strCommand == "getsporks") {
-        std::map<int, CSporkMessage>::iterator it = mapSporksActive.begin();
+        robin_hood::unordered_node_map<int, CSporkMessage>::iterator it = mapSporksActive.begin();
 
         while (it != mapSporksActive.end()) {
             pfrom->PushMessage("spork", it->second);
@@ -169,7 +170,7 @@ bool IsSporkActive(int nSporkID)
 
 void ReprocessBlocks(int nBlocks)
 {
-    std::map<uint256, int64_t>::iterator it = mapRejectedBlocks.begin();
+    robin_hood::unordered_node_map<uint256, int64_t>::iterator it = mapRejectedBlocks.begin();
     while (it != mapRejectedBlocks.end()) {
         //use a window twice as large as is usual for the nBlocks we want to reset
         if ((*it).second > GetTime() - (nBlocks * 60 * 5)) {

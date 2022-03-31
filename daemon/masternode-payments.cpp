@@ -15,8 +15,12 @@
 #include "sync.h"
 #include "util.h"
 #include "utilmoneystr.h"
+#include "robinhood.h"
+
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
+
+
 
 /** Object for who's going to get paid on which blocks */
 CMasternodePayments masternodePayments;
@@ -707,7 +711,7 @@ void CMasternodePayments::CleanPaymentList() {
 	//keep up to five cycles for historical sake
 	int nLimit = std::max(int(mnodeman.size() * 1.25), 1000);
 
-	std::map<uint256, CMasternodePaymentWinner>::iterator it =
+	robin_hood::unordered_node_map<uint256, CMasternodePaymentWinner>::iterator it =
 			mapMasternodePayeeVotes.begin();
 	while (it != mapMasternodePayeeVotes.end()) {
 		CMasternodePaymentWinner winner = (*it).second;
@@ -891,7 +895,7 @@ void CMasternodePayments::Sync(CNode* node, int nCountNeeded) {
 		nCountNeeded = nCount;
 
 	int nInvCount = 0;
-	std::map<uint256, CMasternodePaymentWinner>::iterator it =
+	robin_hood::unordered_node_map<uint256, CMasternodePaymentWinner>::iterator it =
 			mapMasternodePayeeVotes.begin();
 	while (it != mapMasternodePayeeVotes.end()) {
 		CMasternodePaymentWinner winner = (*it).second;
@@ -919,7 +923,7 @@ int CMasternodePayments::GetOldestBlock() {
 
 	int nOldestBlock = std::numeric_limits<int>::max();
 
-	std::map<int, CMasternodeBlockPayees>::iterator it =
+	robin_hood::unordered_node_map<int, CMasternodeBlockPayees>::iterator it =
 			mapMasternodeBlocks.begin();
 	while (it != mapMasternodeBlocks.end()) {
 		if ((*it).first < nOldestBlock) {
@@ -936,7 +940,7 @@ int CMasternodePayments::GetNewestBlock() {
 
 	int nNewestBlock = 0;
 
-	std::map<int, CMasternodeBlockPayees>::iterator it =
+	robin_hood::unordered_node_map<int, CMasternodeBlockPayees>::iterator it =
 			mapMasternodeBlocks.begin();
 	while (it != mapMasternodeBlocks.end()) {
 		if ((*it).first > nNewestBlock) {

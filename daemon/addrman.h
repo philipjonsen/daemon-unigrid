@@ -14,11 +14,13 @@
 #include "sync.h"
 #include "timedata.h"
 #include "util.h"
+#include "robinhood.h"
 
 #include <map>
 #include <set>
 #include <stdint.h>
 #include <vector>
+
 
 /** 
  * Extended statistics about a CAddress 
@@ -181,10 +183,10 @@ private:
     int nIdCount;
 
     //! table with information about all nIds
-    std::map<int, CAddrInfo> mapInfo;
+    robin_hood::unordered_node_map<int, CAddrInfo> mapInfo;
 
     //! find an nId based on its network address
-    std::map<CNetAddr, int> mapAddr;
+    robin_hood::unordered_node_map<CNetAddr, int> mapAddr;
 
     //! randomly-ordered vector of all nIds
     std::vector<int> vRandom;
@@ -289,9 +291,9 @@ public:
 
         int nUBuckets = ADDRMAN_NEW_BUCKET_COUNT ^ (1 << 30);
         s << nUBuckets;
-        std::map<int, int> mapUnkIds;
+        robin_hood::unordered_node_map<int, int> mapUnkIds;
         int nIds = 0;
-        for (std::map<int, CAddrInfo>::const_iterator it = mapInfo.begin(); it != mapInfo.end(); it++) {
+        for (robin_hood::unordered_node_map<int, CAddrInfo>::const_iterator it = mapInfo.begin(); it != mapInfo.end(); it++) {
             mapUnkIds[(*it).first] = nIds;
             const CAddrInfo& info = (*it).second;
             if (info.nRefCount) {
@@ -301,7 +303,7 @@ public:
             }
         }
         nIds = 0;
-        for (std::map<int, CAddrInfo>::const_iterator it = mapInfo.begin(); it != mapInfo.end(); it++) {
+        for (robin_hood::unordered_node_map<int, CAddrInfo>::const_iterator it = mapInfo.begin(); it != mapInfo.end(); it++) {
             const CAddrInfo& info = (*it).second;
             if (info.fInTried) {
                 assert(nIds != nTried); // this means nTried was wrong, oh ow
@@ -407,9 +409,9 @@ public:
 
         // Prune new entries with refcount 0 (as a result of collisions).
         int nLostUnk = 0;
-        for (std::map<int, CAddrInfo>::const_iterator it = mapInfo.begin(); it != mapInfo.end();) {
+        for (robin_hood::unordered_node_map<int, CAddrInfo>::const_iterator it = mapInfo.begin(); it != mapInfo.end();) {
             if (it->second.fInTried == false && it->second.nRefCount == 0) {
-                std::map<int, CAddrInfo>::const_iterator itCopy = it++;
+                robin_hood::unordered_node_map<int, CAddrInfo>::const_iterator itCopy = it++;
                 Delete(itCopy->first);
                 nLostUnk++;
             } else {

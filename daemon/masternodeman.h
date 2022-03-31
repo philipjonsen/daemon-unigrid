@@ -14,6 +14,7 @@
 #include "net.h"
 #include "sync.h"
 #include "util.h"
+#include "robinhood.h"
 
 #define MASTERNODES_DUMP_SECONDS (15 * 60)
 #define MASTERNODES_DSEG_SECONDS (3 * 60 * 60)
@@ -61,11 +62,11 @@ private:
     // map to hold all MNs
     std::vector<CMasternode> vMasternodes;
     // who's asked for the Masternode list and the last time
-    std::map<CNetAddr, int64_t> mAskedUsForMasternodeList;
+    robin_hood::unordered_node_map<CNetAddr, int64_t> mAskedUsForMasternodeList;
     // who we asked for the Masternode list and the last time
-    std::map<CNetAddr, int64_t> mWeAskedForMasternodeList;
+    robin_hood::unordered_node_map<CNetAddr, int64_t> mWeAskedForMasternodeList;
     // which Masternodes we've asked for
-    std::map<COutPoint, int64_t> mWeAskedForMasternodeListEntry;
+    robin_hood::unordered_node_map<COutPoint, int64_t> mWeAskedForMasternodeListEntry;
 
 public:
     // Keep track of all broadcasts I've seen

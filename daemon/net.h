@@ -21,6 +21,7 @@
 #include "sync.h"
 #include "uint256.h"
 #include "utilstrencodings.h"
+#include "robinhood.h"
 
 #include <deque>
 #include <stdint.h>
@@ -135,7 +136,7 @@ extern int nMaxConnections;
 
 extern std::vector<CNode*> vNodes;
 extern CCriticalSection cs_vNodes;
-extern std::map<CInv, CDataStream> mapRelay;
+extern robin_hood::unordered_node_map<CInv, CDataStream> mapRelay;
 extern std::deque<std::pair<int64_t, CInv> > vRelayExpiration;
 extern CCriticalSection cs_mapRelay;
 extern limitedmap<CInv, int64_t> mapAlreadyAskedFor;
@@ -152,7 +153,7 @@ struct LocalServiceInfo {
 };
 
 extern CCriticalSection cs_mapLocalHost;
-extern std::map<CNetAddr, LocalServiceInfo> mapLocalHost;
+extern robin_hood::unordered_node_map<CNetAddr, LocalServiceInfo> mapLocalHost;
 
 class CNodeStats
 {
@@ -277,7 +278,7 @@ public:
     }
 };
 
-typedef std::map<CSubNet, CBanEntry> banmap_t;
+typedef robin_hood::unordered_node_map<CSubNet, CBanEntry> banmap_t;
 
 
 /** Information about a peer */

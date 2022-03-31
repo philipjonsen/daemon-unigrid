@@ -10,6 +10,7 @@
 
 #include "serialize.h"
 #include "sync.h"
+#include "robinhood.h"
 
 #include <map>
 #include <set>
@@ -20,7 +21,7 @@ class CAlert;
 class CNode;
 class uint256;
 
-extern std::map<uint256, CAlert> mapAlerts;
+extern robin_hood::unordered_node_map<uint256, CAlert> mapAlerts;
 extern CCriticalSection cs_mapAlerts;
 
 /** Alerts are for notifying old versions if they become too obsolete and

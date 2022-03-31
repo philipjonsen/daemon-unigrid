@@ -11,6 +11,8 @@
 #include "obfuscation.h"
 #include "spork.h"
 #include "util.h"
+#include "robinhood.h"
+
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -218,7 +220,7 @@ bool CMasternodeMan::Add(CMasternode& mn)
 
 void CMasternodeMan::AskForMN(CNode* pnode, CTxIn& vin)
 {
-    std::map<COutPoint, int64_t>::iterator i = mWeAskedForMasternodeListEntry.find(vin.prevout);
+    robin_hood::unordered_node_map<COutPoint, int64_t>::iterator i = mWeAskedForMasternodeListEntry.find(vin.prevout);
     if (i != mWeAskedForMasternodeListEntry.end()) {
         int64_t t = (*i).second;
         if (GetTime() < t) return; // we've asked recently
@@ -421,7 +423,7 @@ void CMasternodeMan::DsegUpdate(CNode* pnode)
 
     if (Params().NetworkID() == CBaseChainParams::MAIN) {
         if (!(pnode->addr.IsRFC1918() || pnode->addr.IsLocal())) {
-            std::map<CNetAddr, int64_t>::iterator it = mWeAskedForMasternodeList.find(pnode->addr);
+            robin_hood::unordered_node_map<CNetAddr, int64_t>::iterator it = mWeAskedForMasternodeList.find(pnode->addr);
             if (it != mWeAskedForMasternodeList.end()) {
                 if (GetTime() < (*it).second) {
                     LogPrint("masternode", "dseg - we already asked peer %i for the list; skipping...\n", pnode->GetId());
@@ -807,7 +809,7 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
             bool isLocal = (pfrom->addr.IsRFC1918() || pfrom->addr.IsLocal());
 
             if (!isLocal && Params().NetworkID() == CBaseChainParams::MAIN) {
-                std::map<CNetAddr, int64_t>::iterator i = mAskedUsForMasternodeList.find(pfrom->addr);
+                robin_hood::unordered_node_map<CNetAddr, int64_t>::iterator i = mAskedUsForMasternodeList.find(pfrom->addr);
                 if (i != mAskedUsForMasternodeList.end()) {
                     int64_t t = (*i).second;
                     if (GetTime() < t) {
@@ -965,7 +967,7 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
             return;
         }
 
-        static std::map<COutPoint, CPubKey> mapSeenDsee;
+        static robin_hood::unordered_node_map<COutPoint, CPubKey> mapSeenDsee;
         if (mapSeenDsee.count(vin.prevout) && mapSeenDsee[vin.prevout] == pubkey) {
             LogPrint("masternode", "dsee - already seen this vin %s\n", vin.prevout.ToString());
             return;
@@ -1085,7 +1087,7 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CData
             return;
         }
 
-        std::map<COutPoint, int64_t>::iterator i = mWeAskedForMasternodeListEntry.find(vin.prevout);
+        robin_hood::unordered_node_map<COutPoint, int64_t>::iterator i = mWeAskedForMasternodeListEntry.find(vin.prevout);
         if (i != mWeAskedForMasternodeListEntry.end()) {
             int64_t t = (*i).second;
             if (GetTime() < t) return; // we've asked recently

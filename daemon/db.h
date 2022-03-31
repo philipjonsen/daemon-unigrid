@@ -11,6 +11,7 @@
 #include "streams.h"
 #include "sync.h"
 #include "version.h"
+#include "robinhood.h"
 
 #include <map>
 #include <string>
@@ -44,8 +45,8 @@ private:
 public:
     mutable CCriticalSection cs_db;
     DbEnv dbenv;
-    std::map<std::string, int> mapFileUseCount;
-    std::map<std::string, Db*> mapDb;
+    robin_hood::unordered_node_map<std::string, int> mapFileUseCount;
+    robin_hood::unordered_node_map<std::string, Db*> mapDb;
 
     CDBEnv();
     ~CDBEnv();

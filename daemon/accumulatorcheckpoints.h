@@ -6,13 +6,15 @@
 #ifndef UNIGRID_ACCUMULATORCHECKPOINTS_H
 #define UNIGRID_ACCUMULATORCHECKPOINTS_H
 
+#include "robinhood.h"
+
 #include <libzerocoin/bignum.h>
 #include <univalue/include/univalue.h>
 
 namespace AccumulatorCheckpoints
 {
-    typedef std::map<libzerocoin::CoinDenomination, CBigNum> Checkpoint;
-    extern std::map<int, Checkpoint> mapCheckpoints;
+    typedef robin_hood::unordered_node_map<libzerocoin::CoinDenomination, CBigNum> Checkpoint;
+    extern robin_hood::unordered_node_map<int, Checkpoint> mapCheckpoints;
 
     UniValue read_json(const std::string& jsondata);
     bool LoadCheckpoints(const std::string& strNetwork);

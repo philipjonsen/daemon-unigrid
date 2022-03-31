@@ -13,10 +13,11 @@
 #include "accumulatormap.h"
 #include "chain.h"
 #include "uint256.h"
+#include "robinhood.h"
 
 class CBlockIndex;
 
-std::map<libzerocoin::CoinDenomination, int> GetMintMaturityHeight();
+robin_hood::unordered_node_map<libzerocoin::CoinDenomination, int> GetMintMaturityHeight();
 bool GenerateAccumulatorWitness(const libzerocoin::PublicCoin &coin, libzerocoin::Accumulator& accumulator, libzerocoin::AccumulatorWitness& witness, int nSecurityLevel, int& nMintsAdded, std::string& strError, CBlockIndex* pindexCheckpoint = nullptr);
 bool GetAccumulatorValueFromDB(uint256 nCheckpoint, libzerocoin::CoinDenomination denom, CBigNum& bnAccValue);
 bool GetAccumulatorValueFromChecksum(uint32_t nChecksum, bool fMemoryOnly, CBigNum& bnAccValue);

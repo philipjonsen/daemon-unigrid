@@ -17,18 +17,19 @@
 #include "sync.h"
 #include "util.h"
 #include "validationinterface.h"
+#include "robinhood.h"
 
 #include <boost/lexical_cast.hpp>
 
 using namespace std;
 using namespace boost;
 
-std::map<uint256, CTransaction> mapTxLockReq;
-std::map<uint256, CTransaction> mapTxLockReqRejected;
-std::map<uint256, CConsensusVote> mapTxLockVote;
-std::map<uint256, CTransactionLock> mapTxLocks;
-std::map<COutPoint, uint256> mapLockedInputs;
-std::map<uint256, int64_t> mapUnknownVotes; //track votes with no tx for DOS
+robin_hood::unordered_node_map<uint256, CTransaction> mapTxLockReq;
+robin_hood::unordered_node_map<uint256, CTransaction> mapTxLockReqRejected;
+robin_hood::unordered_node_map<uint256, CConsensusVote> mapTxLockVote;
+robin_hood::unordered_node_map<uint256, CTransactionLock> mapTxLocks;
+robin_hood::unordered_node_map<COutPoint, uint256> mapLockedInputs;
+robin_hood::unordered_node_map<uint256, int64_t> mapUnknownVotes; //track votes with no tx for DOS
 int nCompleteTXLocks;
 
 //txlock - Locks transaction
@@ -114,7 +115,7 @@ void ProcessMessageSwiftTX(CNode* pfrom, std::string& strCommand, CDataStream& v
             }
 
             // resolve conflicts
-            std::map<uint256, CTransactionLock>::iterator i = mapTxLocks.find(tx.GetHash());
+            robin_hood::unordered_node_map<uint256, CTransactionLock>::iterator i = mapTxLocks.find(tx.GetHash());
             if (i != mapTxLocks.end()) {
                 //we only care if we have a complete tx lock
                 if ((*i).second.CountSignatures() >= SWIFTTX_SIGNATURES_REQUIRED) {
@@ -343,7 +344,7 @@ bool ProcessConsensusVote(CNode* pnode, CConsensusVote& ctx)
         LogPrint("swiftx", "SwiftX::ProcessConsensusVote - Transaction Lock Exists %s !\n", ctx.txHash.ToString().c_str());
 
     //compile consessus vote
-    std::map<uint256, CTransactionLock>::iterator i = mapTxLocks.find(ctx.txHash);
+    robin_hood::unordered_node_map<uint256, CTransactionLock>::iterator i = mapTxLocks.find(ctx.txHash);
     if (i != mapTxLocks.end()) {
         (*i).second.AddSignature(ctx);
 
@@ -419,7 +420,7 @@ bool CheckForConflictingLocks(CTransaction& tx)
 
 int64_t GetAverageVoteTime()
 {
-    std::map<uint256, int64_t>::iterator it = mapUnknownVotes.begin();
+    robin_hood::unordered_node_map<uint256, int64_t>::iterator it = mapUnknownVotes.begin();
     int64_t total = 0;
     int64_t count = 0;
 
@@ -436,7 +437,7 @@ void CleanTransactionLocksList()
 {
     if (chainActive.Tip() == NULL) return;
 
-    std::map<uint256, CTransactionLock>::iterator it = mapTxLocks.begin();
+    robin_hood::unordered_node_map<uint256, CTransactionLock>::iterator it = mapTxLocks.begin();
 
     while (it != mapTxLocks.end()) {
         if (GetTime() > it->second.nExpiration) { //keep them for an hour
@@ -467,7 +468,7 @@ int GetTransactionLockSignatures(uint256 txHash)
     if(fLargeWorkForkFound || fLargeWorkInvalidChainFound) return -2;
     if (!IsSporkActive(SPORK_2_SWIFTTX)) return -1;
 
-    std::map<uint256, CTransactionLock>::iterator it = mapTxLocks.find(txHash);
+    robin_hood::unordered_node_map<uint256, CTransactionLock>::iterator it = mapTxLocks.find(txHash);
     if(it != mapTxLocks.end()) return it->second.CountSignatures();
 
     return -1;

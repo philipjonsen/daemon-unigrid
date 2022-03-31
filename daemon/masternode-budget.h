@@ -15,7 +15,11 @@
 #include "net.h"
 #include "sync.h"
 #include "util.h"
+#include "robinhood.h"
+
 #include <boost/lexical_cast.hpp>
+
+
 
 using namespace std;
 
@@ -195,12 +199,12 @@ public:
     map<uint256, CBudgetProposal> mapProposals;
     map<uint256, CFinalizedBudget> mapFinalizedBudgets;
 
-    std::map<uint256, CBudgetProposalBroadcast> mapSeenMasternodeBudgetProposals;
-    std::map<uint256, CBudgetVote> mapSeenMasternodeBudgetVotes;
-    std::map<uint256, CBudgetVote> mapOrphanMasternodeBudgetVotes;
-    std::map<uint256, CFinalizedBudgetBroadcast> mapSeenFinalizedBudgets;
-    std::map<uint256, CFinalizedBudgetVote> mapSeenFinalizedBudgetVotes;
-    std::map<uint256, CFinalizedBudgetVote> mapOrphanFinalizedBudgetVotes;
+    robin_hood::unordered_node_map<uint256, CBudgetProposalBroadcast> mapSeenMasternodeBudgetProposals;
+    robin_hood::unordered_node_map<uint256, CBudgetVote> mapSeenMasternodeBudgetVotes;
+    robin_hood::unordered_node_map<uint256, CBudgetVote> mapOrphanMasternodeBudgetVotes;
+    robin_hood::unordered_node_map<uint256, CFinalizedBudgetBroadcast> mapSeenFinalizedBudgets;
+    robin_hood::unordered_node_map<uint256, CFinalizedBudgetVote> mapSeenFinalizedBudgetVotes;
+    robin_hood::unordered_node_map<uint256, CFinalizedBudgetVote> mapOrphanFinalizedBudgetVotes;
 
     CBudgetManager()
     {

@@ -5,10 +5,11 @@
 
 #include "accumulatorcheckpoints.h"
 #include "accumulatorcheckpoints.json.h"
+#include "robinhood.h"
 
 namespace AccumulatorCheckpoints
 {
-    std::map<int, Checkpoint> mapCheckpoints;
+    robin_hood::unordered_node_map<int, Checkpoint> mapCheckpoints;
 
     UniValue read_json(const std::string& jsondata)
     {

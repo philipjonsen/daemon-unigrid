@@ -13,6 +13,7 @@
 
 #include <boost/foreach.hpp>
 #include <boost/thread.hpp>
+#include "robinhood.h"
 
 #ifdef DEBUG_LOCKCONTENTION
 void PrintLockContention(const char* pszName, const char* pszFile, int nLine)
@@ -58,7 +59,7 @@ private:
 };
 
 typedef std::vector<std::pair<void*, CLockLocation> > LockStack;
-typedef std::map<std::pair<void*, void*>, LockStack> LockOrders;
+typedef robin_hood::unordered_node_map<std::pair<void*, void*>, LockStack> LockOrders;
 typedef std::set<std::pair<void*, void*> > InvLockOrders;
 
 struct LockData {

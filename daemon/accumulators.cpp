@@ -12,10 +12,11 @@
 #include "spork.h"
 #include "accumulatorcheckpoints.h"
 #include "zpivchain.h"
+#include "robinhood.h"
 
 using namespace libzerocoin;
 
-std::map<uint32_t, CBigNum> mapAccumulatorValues;
+robin_hood::unordered_node_map<uint32_t, CBigNum> mapAccumulatorValues;
 std::list<uint256> listAccCheckpointsNoDB;
 
 uint32_t ParseChecksum(uint256 nChecksum, CoinDenomination denomination)

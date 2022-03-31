@@ -12,6 +12,7 @@
 #include "primitives/zerocoin.h"
 #include "libzerocoin/bignum.h"
 #include "uint256.h"
+#include "robinhood.h"
 
 /**
  * The MintPool only contains mint values that have not been added to the blockchain yet.
@@ -21,7 +22,7 @@
  * The MintPool provides a convenient way to check whether mints in the blockchain belong to a
  * wallet's deterministic seed.
  */
-class CMintPool : public std::map<uint256, uint32_t> //pubcoin hash, count
+class CMintPool : public robin_hood::unordered_node_map<uint256, uint32_t> //pubcoin hash, count
 {
 private:
     uint32_t nCountLastGenerated;

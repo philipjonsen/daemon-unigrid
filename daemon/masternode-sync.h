@@ -20,6 +20,8 @@
 #define MASTERNODE_SYNC_TIMEOUT 5
 #define MASTERNODE_SYNC_THRESHOLD 2
 
+#include "robinhood.h"
+
 class CMasternodeSync;
 extern CMasternodeSync masternodeSync;
 
@@ -30,9 +32,9 @@ extern CMasternodeSync masternodeSync;
 class CMasternodeSync
 {
 public:
-    std::map<uint256, int> mapSeenSyncMNB;
-    std::map<uint256, int> mapSeenSyncMNW;
-    std::map<uint256, int> mapSeenSyncBudget;
+    robin_hood::unordered_node_map<uint256, int> mapSeenSyncMNB;
+    robin_hood::unordered_node_map<uint256, int> mapSeenSyncMNW;
+    robin_hood::unordered_node_map<uint256, int> mapSeenSyncBudget;
 
     int64_t lastMasternodeList;
     int64_t lastMasternodeWinner;

@@ -11,6 +11,7 @@
 #include "net.h"
 #include "util.h"
 #include "crypto/hmac_sha256.h"
+#include "robinhood.h"
 
 #include <vector>
 #include <deque>
@@ -275,9 +276,9 @@ static std::pair<std::string,std::string> SplitTorReplyLine(const std::string &s
  * the server reply formats for PROTOCOLINFO (S3.21), AUTHCHALLENGE (S3.24),
  * and ADD_ONION (S3.27). See also sections 2.1 and 2.3.
  */
-static std::map<std::string,std::string> ParseTorReplyMapping(const std::string &s)
+static robin_hood::unordered_node_map<std::string,std::string> ParseTorReplyMapping(const std::string &s)
 {
-    std::map<std::string,std::string> mapping;
+    robin_hood::unordered_node_map<std::string,std::string> mapping;
     size_t ptr=0;
     while (ptr < s.size()) {
         std::string key, value;
@@ -286,7 +287,7 @@ static std::map<std::string,std::string> ParseTorReplyMapping(const std::string 
             ++ptr;
         }
         if (ptr == s.size()) // unexpected end of line
-            return std::map<std::string,std::string>();
+            return robin_hood::unordered_node_map<std::string,std::string>();
         if (s[ptr] == ' ') // The remaining string is an OptArguments
             break;
         ++ptr; // skip '='
@@ -300,7 +301,7 @@ static std::map<std::string,std::string> ParseTorReplyMapping(const std::string 
                 ++ptr;
             }
             if (ptr == s.size()) // unexpected end of line
-                return std::map<std::string,std::string>();
+                return robin_hood::unordered_node_map<std::string,std::string>();
             ++ptr; // skip closing '"'
             /**
              * Unescape value. Per https://spec.torproject.org/control-spec section 2.1.1:
@@ -491,8 +492,8 @@ void TorController::add_onion_cb(TorControlConnection& _conn, const TorControlRe
     if (reply.code == 250) {
         LogPrint("tor", "tor: ADD_ONION successful\n");
         BOOST_FOREACH(const std::string &s, reply.lines) {
-            std::map<std::string,std::string> m = ParseTorReplyMapping(s);
-            std::map<std::string,std::string>::iterator i;
+            robin_hood::unordered_node_map<std::string,std::string> m = ParseTorReplyMapping(s);
+            robin_hood::unordered_node_map<std::string,std::string>::iterator i;
             if ((i = m.find("ServiceID")) != m.end())
                 service_id = i->second;
             if ((i = m.find("PrivateKey")) != m.end())
@@ -582,7 +583,7 @@ void TorController::authchallenge_cb(TorControlConnection& _conn, const TorContr
         LogPrint("tor", "tor: SAFECOOKIE authentication challenge successful\n");
         std::pair<std::string,std::string> l = SplitTorReplyLine(reply.lines[0]);
         if (l.first == "AUTHCHALLENGE") {
-            std::map<std::string,std::string> m = ParseTorReplyMapping(l.second);
+            robin_hood::unordered_node_map<std::string,std::string> m = ParseTorReplyMapping(l.second);
             if (m.empty()) {
                 LogPrintf("tor: Error parsing AUTHCHALLENGE parameters: %s\n", SanitizeString(l.second));
                 return;
@@ -624,15 +625,15 @@ void TorController::protocolinfo_cb(TorControlConnection& _conn, const TorContro
         BOOST_FOREACH(const std::string &s, reply.lines) {
             std::pair<std::string,std::string> l = SplitTorReplyLine(s);
             if (l.first == "AUTH") {
-                std::map<std::string,std::string> m = ParseTorReplyMapping(l.second);
-                std::map<std::string,std::string>::iterator i;
+                robin_hood::unordered_node_map<std::string,std::string> m = ParseTorReplyMapping(l.second);
+                robin_hood::unordered_node_map<std::string,std::string>::iterator i;
                 if ((i = m.find("METHODS")) != m.end())
                     boost::split(methods, i->second, boost::is_any_of(","));
                 if ((i = m.find("COOKIEFILE")) != m.end())
                     cookiefile = i->second;
             } else if (l.first == "VERSION") {
-                std::map<std::string,std::string> m = ParseTorReplyMapping(l.second);
-                std::map<std::string,std::string>::iterator i;
+                robin_hood::unordered_node_map<std::string,std::string> m = ParseTorReplyMapping(l.second);
+                robin_hood::unordered_node_map<std::string,std::string>::iterator i;
                 if ((i = m.find("Tor")) != m.end()) {
                     LogPrint("tor", "tor: Connected to Tor version %s\n", i->second);
                 }

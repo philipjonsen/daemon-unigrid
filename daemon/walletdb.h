@@ -16,6 +16,7 @@
 #include "libzerocoin/Accumulator.h"
 #include "libzerocoin/Denominations.h"
 #include "zpivtracker.h"
+#include "robinhood.h"
 
 #include <list>
 #include <stdint.h>
@@ -184,7 +185,7 @@ public:
 
     bool WriteZUNIGRIDCount(const uint32_t& nCount);
     bool ReadZUNIGRIDCount(uint32_t& nCount);
-    std::map<uint256, std::vector<pair<uint256, uint32_t> > > MapMintPool();
+    robin_hood::unordered_node_map<uint256, std::vector<pair<uint256, uint32_t> > > MapMintPool();
     bool WriteMintPoolPair(const uint256& hashMasterSeed, const uint256& hashPubcoin, const uint32_t& nCount);
 
 

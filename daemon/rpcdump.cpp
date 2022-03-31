@@ -16,6 +16,7 @@
 #include "utilstrencodings.h"
 #include "utiltime.h"
 #include "wallet.h"
+#include "robinhood.h"
 
 #include <fstream>
 #include <secp256k1.h>
@@ -386,14 +387,14 @@ UniValue dumpwallet(const UniValue& params, bool fHelp)
     if (!file.is_open())
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Cannot open wallet dump file");
 
-    std::map<CKeyID, int64_t> mapKeyBirth;
+    robin_hood::unordered_node_map<CKeyID, int64_t> mapKeyBirth;
     std::set<CKeyID> setKeyPool;
     pwalletMain->GetKeyBirthTimes(mapKeyBirth);
     pwalletMain->GetAllReserveKeys(setKeyPool);
 
     // sort time/key pairs
     std::vector<std::pair<int64_t, CKeyID> > vKeyBirth;
-    for (std::map<CKeyID, int64_t>::const_iterator it = mapKeyBirth.begin(); it != mapKeyBirth.end(); it++) {
+    for (robin_hood::unordered_node_map<CKeyID, int64_t>::const_iterator it = mapKeyBirth.begin(); it != mapKeyBirth.end(); it++) {
         vKeyBirth.push_back(std::make_pair(it->second, it->first));
     }
     mapKeyBirth.clear();

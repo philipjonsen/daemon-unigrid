@@ -11,6 +11,7 @@
 #include "amount.h"
 #include "rpcprotocol.h"
 #include "uint256.h"
+#include "robinhood.h"
 
 #include <list>
 #include <map>
@@ -72,7 +73,7 @@ void RPCTypeCheck(const UniValue& params,
  * Use like: RPCTypeCheckObj(object, boost::assign::map_list_of("name", str_type)("value", int_type));
  */
 void RPCTypeCheckObj(const UniValue& o,
-                  const std::map<std::string, UniValue::VType>& typesExpected, bool fAllowNull=false);
+                  const robin_hood::unordered_node_map<std::string, UniValue::VType>& typesExpected, bool fAllowNull=false);
 
 /** Opaque base class for timers returned by NewTimerFunc.
  * This provides no methods at the moment, but makes sure that delete
@@ -132,7 +133,7 @@ public:
 class CRPCTable
 {
 private:
-    std::map<std::string, const CRPCCommand*> mapCommands;
+    robin_hood::unordered_node_map<std::string, const CRPCCommand*> mapCommands;
 
 public:
     CRPCTable();

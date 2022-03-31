@@ -6,6 +6,8 @@
 #ifndef BITCOIN_ALLOCATORS_H
 #define BITCOIN_ALLOCATORS_H
 
+#include "robinhood.h"
+
 #include <map>
 #include <string.h>
 #include <string>
@@ -100,7 +102,7 @@ private:
     boost::mutex mutex;
     size_t page_size, page_mask;
     // map of page base address to lock count
-    typedef std::map<size_t, int> Histogram;
+    typedef robin_hood::unordered_node_map<size_t, int> Histogram;
     Histogram histogram;
 };
 

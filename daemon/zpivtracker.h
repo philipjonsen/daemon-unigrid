@@ -7,6 +7,7 @@
 #define UNIGRID_ZUNIGRIDTRACKER_H
 
 #include "primitives/zerocoin.h"
+#include "robinhood.h"
 #include <list>
 
 class CDeterministicMint;
@@ -16,8 +17,8 @@ class CzUNIGRIDTracker
 private:
     bool fInitialized;
     std::string strWalletFile;
-    std::map<uint256, CMintMeta> mapSerialHashes;
-    std::map<uint256, uint256> mapPendingSpends; //serialhash, txid of spend
+    robin_hood::unordered_node_map<uint256, CMintMeta> mapSerialHashes;
+    robin_hood::unordered_node_map<uint256, uint256> mapPendingSpends; //serialhash, txid of spend
     bool UpdateStatusInternal(const std::set<uint256>& setMempool, CMintMeta& mint);
 public:
     CzUNIGRIDTracker(std::string strWalletFile);

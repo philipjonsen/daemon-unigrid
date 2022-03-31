@@ -4,6 +4,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "denomination_functions.h"
+#include "robinhood.h"
 
 using namespace libzerocoin;
 
@@ -11,7 +12,7 @@ using namespace libzerocoin;
 // Number of coins used for either change or a spend given a map of coins used
 // -------------------------------------------------------------------------------------------------------
 int getNumberOfCoinsUsed(
-    const std::map<CoinDenomination, CAmount>& mapChange)
+    const robin_hood::unordered_node_map<CoinDenomination, CAmount>& mapChange)
 {
     int nChangeCount = 0;
     for (const auto& denom : zerocoinDenomList) {
@@ -24,7 +25,7 @@ int getNumberOfCoinsUsed(
 // Find the max CoinDenomination amongst held coins
 // -------------------------------------------------------------------------------------------------------
 CoinDenomination getMaxDenomHeld(
-    const std::map<CoinDenomination, CAmount>& mapCoinsHeld)
+    const robin_hood::unordered_node_map<CoinDenomination, CAmount>& mapCoinsHeld)
 {
     CoinDenomination maxDenom = ZQ_ERROR;
     for (auto& coin : reverse_iterate(zerocoinDenomList)) {
@@ -38,11 +39,11 @@ CoinDenomination getMaxDenomHeld(
 // -------------------------------------------------------------------------------------------------------
 // Get Exact Amount with CoinsHeld
 // -------------------------------------------------------------------------------------------------------
-std::map<CoinDenomination, CAmount> getSpendCoins(const CAmount nValueTarget,
-    const std::map<CoinDenomination, CAmount> mapOfDenomsHeld)
+robin_hood::unordered_node_map<CoinDenomination, CAmount> getSpendCoins(const CAmount nValueTarget,
+    const robin_hood::unordered_node_map<CoinDenomination, CAmount> mapOfDenomsHeld)
 
 {
-    std::map<CoinDenomination, CAmount> mapUsed;
+    robin_hood::unordered_node_map<CoinDenomination, CAmount> mapUsed;
     CAmount nRemainingValue = nValueTarget;
     // Initialize
     for (const auto& denom : zerocoinDenomList)
@@ -65,9 +66,9 @@ std::map<CoinDenomination, CAmount> getSpendCoins(const CAmount nValueTarget,
 // -------------------------------------------------------------------------------------------------------
 // Get change (no limits)
 // -------------------------------------------------------------------------------------------------------
-std::map<CoinDenomination, CAmount> getChange(const CAmount nValueTarget)
+robin_hood::unordered_node_map<CoinDenomination, CAmount> getChange(const CAmount nValueTarget)
 {
-    std::map<CoinDenomination, CAmount> mapChange;
+    robin_hood::unordered_node_map<CoinDenomination, CAmount> mapChange;
     CAmount nRemainingValue = nValueTarget;
     // Initialize
     for (const auto& denom : zerocoinDenomList)
@@ -94,8 +95,8 @@ std::map<CoinDenomination, CAmount> getChange(const CAmount nValueTarget)
 bool getIdealSpends(
     const CAmount nValueTarget,
     const std::list<CMintMeta>& listMints,
-    const std::map<CoinDenomination, CAmount> mapOfDenomsHeld,
-    std::map<CoinDenomination, CAmount>& mapOfDenomsUsed)
+    const robin_hood::unordered_node_map<CoinDenomination, CAmount> mapOfDenomsHeld,
+    robin_hood::unordered_node_map<CoinDenomination, CAmount>& mapOfDenomsUsed)
 {
     CAmount nRemainingValue = nValueTarget;
     // Initialize
@@ -122,7 +123,7 @@ bool getIdealSpends(
 // -------------------------------------------------------------------------------------------------------
 std::vector<CMintMeta> getSpends(
     const std::list<CMintMeta>& listMints,
-    std::map<CoinDenomination, CAmount>& mapOfDenomsUsed,
+    robin_hood::unordered_node_map<CoinDenomination, CAmount>& mapOfDenomsUsed,
     CAmount& nCoinsSpentValue)
 {
     std::vector<CMintMeta> vSelectedMints;
@@ -146,7 +147,7 @@ std::vector<CMintMeta> getSpends(
 // -------------------------------------------------------------------------------------------------------
 void listSpends(const std::vector<CZerocoinMint>& vSelectedMints)
 {
-    std::map<libzerocoin::CoinDenomination, int64_t> mapZerocoinSupply;
+    robin_hood::unordered_node_map<libzerocoin::CoinDenomination, int64_t> mapZerocoinSupply;
     for (auto& denom : libzerocoin::zerocoinDenomList)
         mapZerocoinSupply.insert(std::make_pair(denom, 0));
 
@@ -167,7 +168,7 @@ void listSpends(const std::vector<CZerocoinMint>& vSelectedMints)
 // Find the CoinDenomination with the most number for a given amount
 // -------------------------------------------------------------------------------------------------------
 CoinDenomination getDenomWithMostCoins(
-    const std::map<CoinDenomination, CAmount>& mapOfDenomsUsed)
+    const robin_hood::unordered_node_map<CoinDenomination, CAmount>& mapOfDenomsUsed)
 {
     CoinDenomination maxCoins = ZQ_ERROR;
     CAmount nMaxNumber = 0;
@@ -199,7 +200,7 @@ CoinDenomination getNextHighestDenom(const CoinDenomination& this_denom)
 // Return ZQ_ERROR if none found
 // -------------------------------------------------------------------------------------------------------
 CoinDenomination getNextLowerDenomHeld(const CoinDenomination& this_denom,
-    const std::map<CoinDenomination, CAmount>& mapCoinsHeld)
+    const robin_hood::unordered_node_map<CoinDenomination, CAmount>& mapCoinsHeld)
 {
     CoinDenomination nextValue = ZQ_ERROR;
     for (auto& denom : reverse_iterate(zerocoinDenomList)) {
@@ -216,8 +217,8 @@ int minimizeChange(
     int nChangeCount,
     const CoinDenomination nextToMaxDenom,
     const CAmount nValueTarget,
-    const std::map<CoinDenomination, CAmount>& mapOfDenomsHeld,
-    std::map<CoinDenomination, CAmount>& mapOfDenomsUsed)
+    const robin_hood::unordered_node_map<CoinDenomination, CAmount>& mapOfDenomsHeld,
+    robin_hood::unordered_node_map<CoinDenomination, CAmount>& mapOfDenomsUsed)
 {
     // Now find out if possible without using 1 coin such that we have more spends but less change
     // First get set of coins close to value but still less than value (since not exact)
@@ -226,7 +227,7 @@ int minimizeChange(
     int nCoinCount = 0;
 
     // Re-clear this
-    std::map<CoinDenomination, CAmount> savedMapOfDenomsUsed = mapOfDenomsUsed;
+    robin_hood::unordered_node_map<CoinDenomination, CAmount> savedMapOfDenomsUsed = mapOfDenomsUsed;
     for (const auto& denom : zerocoinDenomList)
         mapOfDenomsUsed.at(denom) = 0;
 
@@ -267,7 +268,7 @@ int minimizeChange(
     // So 5 is no longer needed and will become change also
 
     CAmount nAltChangeAmount = AmountUsed - nValueTarget;
-    std::map<CoinDenomination, CAmount> mapAltChange = getChange(nAltChangeAmount);
+    robin_hood::unordered_node_map<CoinDenomination, CAmount> mapAltChange = getChange(nAltChangeAmount);
 
     // Check if there is overlap between change and spend denominations
     // And if so, remove those that overlap
@@ -312,8 +313,8 @@ int calculateChange(
     int nMaxNumberOfSpends,
     bool fMinimizeChange,
     const CAmount nValueTarget,
-    const std::map<CoinDenomination, CAmount>& mapOfDenomsHeld,
-    std::map<CoinDenomination, CAmount>& mapOfDenomsUsed)
+    const robin_hood::unordered_node_map<CoinDenomination, CAmount>& mapOfDenomsHeld,
+    robin_hood::unordered_node_map<CoinDenomination, CAmount>& mapOfDenomsUsed)
 {
     CoinDenomination minDenomOverTarget = ZQ_ERROR;
     // Initialize
@@ -333,7 +334,7 @@ int calculateChange(
 
         // Now find out # of coins in change
         CAmount nChangeAmount = ZerocoinDenominationToAmount(minDenomOverTarget) - nValueTarget;
-        std::map<CoinDenomination, CAmount> mapChange = getChange(nChangeAmount);
+        robin_hood::unordered_node_map<CoinDenomination, CAmount> mapChange = getChange(nChangeAmount);
         int nChangeCount = getNumberOfCoinsUsed(mapChange);
 
         if (fMinimizeChange) {
@@ -375,14 +376,14 @@ int calculateChange(
         }
 
         CAmount nChangeAmount = AmountUsed - nValueTarget;
-        std::map<CoinDenomination, CAmount> mapChange = getChange(nChangeAmount);
+        robin_hood::unordered_node_map<CoinDenomination, CAmount> mapChange = getChange(nChangeAmount);
         int nMaxChangeCount = getNumberOfCoinsUsed(mapChange);
 
         // Instead get max Denom held
         CoinDenomination maxDenomHeld = getMaxDenomHeld(mapOfDenomsHeld);
 
         // Assign for size (only)
-        std::map<CoinDenomination, CAmount> mapOfMinDenomsUsed = mapOfDenomsUsed;
+        robin_hood::unordered_node_map<CoinDenomination, CAmount> mapOfMinDenomsUsed = mapOfDenomsUsed;
 
         int nChangeCount = minimizeChange(nMaxNumberOfSpends, nMaxChangeCount,
                                           maxDenomHeld, nValueTarget,
@@ -405,10 +406,10 @@ int calculateChange(
 // -------------------------------------------------------------------------------------------------------
 std::vector<CMintMeta> SelectMintsFromList(const CAmount nValueTarget, CAmount& nSelectedValue, int nMaxNumberOfSpends, bool fMinimizeChange,
                                                int& nCoinsReturned, const std::list<CMintMeta>& listMints,
-                                               const std::map<CoinDenomination, CAmount> mapOfDenomsHeld, int& nNeededSpends)
+                                               const robin_hood::unordered_node_map<CoinDenomination, CAmount> mapOfDenomsHeld, int& nNeededSpends)
 {
     std::vector<CMintMeta> vSelectedMints;
-    std::map<CoinDenomination, CAmount> mapOfDenomsUsed;
+    robin_hood::unordered_node_map<CoinDenomination, CAmount> mapOfDenomsUsed;
 
     nNeededSpends = 0;
     bool fCanMeetExactly = getIdealSpends(nValueTarget, listMints, mapOfDenomsHeld, mapOfDenomsUsed);

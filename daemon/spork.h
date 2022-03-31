@@ -13,6 +13,7 @@
 #include "net.h"
 #include "sync.h"
 #include "util.h"
+#include "robinhood.h"
 
 #include "obfuscation.h"
 #include "protocol.h"
@@ -48,8 +49,8 @@ using namespace boost;
 class CSporkMessage;
 class CSporkManager;
 
-extern std::map<uint256, CSporkMessage> mapSporks;
-extern std::map<int, CSporkMessage> mapSporksActive;
+extern robin_hood::unordered_node_map<uint256, CSporkMessage> mapSporks;
+extern robin_hood::unordered_node_map<int, CSporkMessage> mapSporksActive;
 extern CSporkManager sporkManager;
 
 void LoadSporksFromDB();

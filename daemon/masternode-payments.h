@@ -10,6 +10,8 @@
 #include "key.h"
 #include "main.h"
 #include "masternode.h"
+#include "robinhood.h"
+
 #include <boost/lexical_cast.hpp>
 
 using namespace std;
@@ -238,9 +240,9 @@ private:
     int nLastBlockHeight;
 
 public:
-    std::map<uint256, CMasternodePaymentWinner> mapMasternodePayeeVotes;
-    std::map<int, CMasternodeBlockPayees> mapMasternodeBlocks;
-    std::map<uint256, int> mapMasternodesLastVote; //prevout.hash + prevout.n, nBlockHeight
+    robin_hood::unordered_node_map<uint256, CMasternodePaymentWinner> mapMasternodePayeeVotes;
+    robin_hood::unordered_node_map<int, CMasternodeBlockPayees> mapMasternodeBlocks;
+    robin_hood::unordered_node_map<uint256, int> mapMasternodesLastVote; //prevout.hash + prevout.n, nBlockHeight
 
     CMasternodePayments()
     {

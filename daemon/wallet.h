@@ -26,6 +26,7 @@
 #include "walletdb.h"
 #include "zpivwallet.h"
 #include "zpivtracker.h"
+#include "robinhood.h"
 
 #include <algorithm>
 #include <map>
@@ -155,7 +156,7 @@ public:
         purpose = "unknown";
     }
 
-    typedef std::map<std::string, std::string> StringMap;
+    typedef robin_hood::unordered_node_map<std::string, std::string> StringMap;
     StringMap destdata;
 };
 
@@ -247,9 +248,9 @@ public:
     std::unique_ptr<CzUNIGRIDTracker> zpivTracker;
 
     std::set<int64_t> setKeyPool;
-    std::map<CKeyID, CKeyMetadata> mapKeyMetadata;
+    robin_hood::unordered_node_map<CKeyID, CKeyMetadata> mapKeyMetadata;
 
-    typedef std::map<unsigned int, CMasterKey> MasterKeyMap;
+    typedef robin_hood::unordered_node_map<unsigned int, CMasterKey> MasterKeyMap;
     MasterKeyMap mapMasterKeys;
     unsigned int nMasterKeyMaxID;
 
@@ -358,7 +359,7 @@ public:
         fMultiSendStake = false;
     }
 
-    std::map<uint256, CWalletTx> mapWallet;
+    robin_hood::unordered_node_map<uint256, CWalletTx> mapWallet;
     std::list<CAccountingEntry> laccentries;
 
     typedef std::pair<CWalletTx*, CAccountingEntry*> TxPair;
@@ -366,9 +367,9 @@ public:
     TxItems wtxOrdered;
 
     int64_t nOrderPosNext;
-    std::map<uint256, int> mapRequestCount;
+    robin_hood::unordered_node_map<uint256, int> mapRequestCount;
 
-    std::map<CTxDestination, CAddressBookData> mapAddressBook;
+    robin_hood::unordered_node_map<CTxDestination, CAddressBookData> mapAddressBook;
 
     CPubKey vchDefaultKey;
 
@@ -386,7 +387,7 @@ public:
     }
 
     void AvailableCoins(std::vector<COutput>& vCoins, bool fOnlyConfirmed = true, const CCoinControl* coinControl = NULL, bool fIncludeZeroValue = false, AvailableCoinsType nCoinType = ALL_COINS, bool fUseIX = false, int nWatchonlyConfig = 1) const;
-    std::map<CBitcoinAddress, std::vector<COutput> > AvailableCoinsByAddress(bool fConfirmed = true, CAmount maxCoinValue = 0);
+    robin_hood::unordered_node_map<CBitcoinAddress, std::vector<COutput> > AvailableCoinsByAddress(bool fConfirmed = true, CAmount maxCoinValue = 0);
     bool SelectCoinsMinConf(const CAmount& nTargetValue, int nConfMine, int nConfTheirs, std::vector<COutput> vCoins, std::set<std::pair<const CWalletTx*, unsigned int> >& setCoinsRet, CAmount& nValueRet) const;
 
     /// Get 1000DASH output and keys which can be used for the Masternode
@@ -454,7 +455,7 @@ public:
     bool ChangeWalletPassphrase(const SecureString& strOldWalletPassphrase, const SecureString& strNewWalletPassphrase);
     bool EncryptWallet(const SecureString& strWalletPassphrase);
 
-    void GetKeyBirthTimes(std::map<CKeyID, int64_t>& mapKeyBirth) const;
+    void GetKeyBirthTimes(robin_hood::unordered_node_map<CKeyID, int64_t>& mapKeyBirth) const;
     unsigned int ComputeTimeSmart(const CWalletTx& wtx) const;
 
     /**
@@ -477,7 +478,7 @@ public:
     CAmount GetImmatureZerocoinBalance() const;
     CAmount GetLockedCoins() const;
     CAmount GetUnlockedCoins() const;
-    std::map<libzerocoin::CoinDenomination, CAmount> GetMyZerocoinDistribution() const;
+    robin_hood::unordered_node_map<libzerocoin::CoinDenomination, CAmount> GetMyZerocoinDistribution() const;
     CAmount GetUnconfirmedBalance() const;
     CAmount GetImmatureBalance() const;
     CAmount GetAnonymizableBalance() const;
@@ -524,7 +525,7 @@ public:
     void GetAllReserveKeys(std::set<CKeyID>& setAddress) const;
 
     std::set<std::set<CTxDestination> > GetAddressGroupings();
-    std::map<CTxDestination, CAmount> GetAddressBalances();
+    robin_hood::unordered_node_map<CTxDestination, CAmount> GetAddressBalances();
 
     std::set<CTxDestination> GetAccountAddresses(std::string strAccount) const;
 
@@ -619,7 +620,7 @@ public:
     {
         {
             LOCK(cs_wallet);
-            std::map<uint256, int>::iterator mi = mapRequestCount.find(hash);
+            robin_hood::unordered_node_map<uint256, int>::iterator mi = mapRequestCount.find(hash);
             if (mi != mapRequestCount.end())
                 (*mi).second++;
         }
@@ -704,7 +705,7 @@ public:
 };
 
 
-typedef std::map<std::string, std::string> mapValue_t;
+typedef robin_hood::unordered_node_map<std::string, std::string> mapValue_t;
 
 
 static void ReadOrderPos(int64_t& nOrderPos, mapValue_t& mapValue)

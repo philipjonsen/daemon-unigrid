@@ -8,6 +8,7 @@
 #define BITCOIN_CHECKPOINTS_H
 
 #include "uint256.h"
+#include "robinhood.h"
 
 #include <map>
 
@@ -19,7 +20,7 @@ class CBlockIndex;
  */
 namespace Checkpoints
 {
-typedef std::map<int, uint256> MapCheckpoints;
+typedef robin_hood::unordered_node_map<int, uint256> MapCheckpoints;
 
 struct CCheckpointData {
     const MapCheckpoints* mapCheckpoints;

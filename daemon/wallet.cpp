@@ -26,6 +26,7 @@
 #include "util.h"
 #include "utilmoneystr.h"
 #include "zpivchain.h"
+#include "robinhood.h"
 
 #include "denomination_functions.h"
 #include "libzerocoin/Denominations.h"
@@ -81,7 +82,7 @@ std::string COutput::ToString() const
 const CWalletTx* CWallet::GetWalletTx(const uint256& hash) const
 {
     LOCK(cs_wallet);
-    std::map<uint256, CWalletTx>::const_iterator it = mapWallet.find(hash);
+    robin_hood::unordered_node_map<uint256, CWalletTx>::const_iterator it = mapWallet.find(hash);
     if (it == mapWallet.end())
         return NULL;
     return &(it->second);
@@ -378,7 +379,7 @@ set<uint256> CWallet::GetConflicts(const uint256& txid) const
     set<uint256> result;
     AssertLockHeld(cs_wallet);
 
-    std::map<uint256, CWalletTx>::const_iterator it = mapWallet.find(txid);
+    robin_hood::unordered_node_map<uint256, CWalletTx>::const_iterator it = mapWallet.find(txid);
     if (it == mapWallet.end())
         return result;
     const CWalletTx& wtx = it->second;
@@ -439,7 +440,7 @@ bool CWallet::IsSpent(const uint256& hash, unsigned int n) const
     range = mapTxSpends.equal_range(outpoint);
     for (TxSpends::const_iterator it = range.first; it != range.second; ++it) {
         const uint256& wtxid = it->second;
-        std::map<uint256, CWalletTx>::const_iterator mit = mapWallet.find(wtxid);
+        robin_hood::unordered_node_map<uint256, CWalletTx>::const_iterator mit = mapWallet.find(wtxid);
         if (mit != mapWallet.end() && mit->second.GetDepthInMainChain() >= 0)
             return true; // Spent
     }
@@ -796,7 +797,7 @@ CAmount CWallet::GetDebit(const CTxIn& txin, const isminefilter& filter) const
 // Recursively determine the rounds of a given input (How deep is the Obfuscation chain for a given input)
 int CWallet::GetRealInputObfuscationRounds(CTxIn in, int rounds) const
 {
-    static std::map<uint256, CMutableTransaction> mDenomWtxes;
+    static robin_hood::unordered_node_map<uint256, CMutableTransaction> mDenomWtxes;
 
     if (rounds >= 16) return 15; // 16 rounds max
 
@@ -805,7 +806,7 @@ int CWallet::GetRealInputObfuscationRounds(CTxIn in, int rounds) const
 
     const CWalletTx* wtx = GetWalletTx(hash);
     if (wtx != NULL) {
-        std::map<uint256, CMutableTransaction>::const_iterator mdwi = mDenomWtxes.find(hash);
+        robin_hood::unordered_node_map<uint256, CMutableTransaction>::const_iterator mdwi = mDenomWtxes.find(hash);
         // not known yet, let's add it
         if (mdwi == mDenomWtxes.end()) {
             LogPrint("obfuscation", "GetInputObfuscationRounds INSERTING %s\n", hash.ToString());
@@ -1628,7 +1629,7 @@ CAmount CWallet::GetBalance() const
     return nTotal;
 }
 
-std::map<libzerocoin::CoinDenomination, int> mapMintMaturity;
+robin_hood::unordered_node_map<libzerocoin::CoinDenomination, int> mapMintMaturity;
 int nLastMaturityCheck = 0;
 CAmount CWallet::GetZerocoinBalance(bool fMatureOnly) const
 {
@@ -1697,9 +1698,9 @@ CAmount CWallet::GetLockedCoins() const
 }
 
 // Get a Map pairing the Denominations with the amount of Zerocoin for each Denomination
-std::map<libzerocoin::CoinDenomination, CAmount> CWallet::GetMyZerocoinDistribution() const
+robin_hood::unordered_node_map<libzerocoin::CoinDenomination, CAmount> CWallet::GetMyZerocoinDistribution() const
 {
-    std::map<libzerocoin::CoinDenomination, CAmount> spread;
+    robin_hood::unordered_node_map<libzerocoin::CoinDenomination, CAmount> spread;
     for (const auto& denom : libzerocoin::zerocoinDenomList)
         spread.insert(std::pair<libzerocoin::CoinDenomination, CAmount>(denom, 0));
     {
@@ -3384,7 +3385,7 @@ bool CWallet::SetAddressBook(const CTxDestination& address, const string& strNam
     bool fUpdated = false;
     {
         LOCK(cs_wallet); // mapAddressBook
-        std::map<CTxDestination, CAddressBookData>::iterator mi = mapAddressBook.find(address);
+        robin_hood::unordered_node_map<CTxDestination, CAddressBookData>::iterator mi = mapAddressBook.find(address);
         fUpdated = mi != mapAddressBook.end();
         mapAddressBook[address].name = strName;
         if (!strPurpose.empty()) /* update purpose only if requested */
@@ -3568,7 +3569,7 @@ int64_t CWallet::GetOldestKeyPoolTime()
     return keypool.nTime;
 }
 
-std::map<CTxDestination, CAmount> CWallet::GetAddressBalances()
+robin_hood::unordered_node_map<CTxDestination, CAmount> CWallet::GetAddressBalances()
 {
     map<CTxDestination, CAmount> balances;
 
@@ -3841,19 +3842,19 @@ public:
     void operator()(const CNoDestination& none) {}
 };
 
-void CWallet::GetKeyBirthTimes(std::map<CKeyID, int64_t>& mapKeyBirth) const
+void CWallet::GetKeyBirthTimes(robin_hood::unordered_node_map<CKeyID, int64_t>& mapKeyBirth) const
 {
     AssertLockHeld(cs_wallet); // mapKeyMetadata
     mapKeyBirth.clear();
 
     // get birth times for keys with metadata
-    for (std::map<CKeyID, CKeyMetadata>::const_iterator it = mapKeyMetadata.begin(); it != mapKeyMetadata.end(); it++)
+    for (robin_hood::unordered_node_map<CKeyID, CKeyMetadata>::const_iterator it = mapKeyMetadata.begin(); it != mapKeyMetadata.end(); it++)
         if (it->second.nCreateTime)
             mapKeyBirth[it->first] = it->second.nCreateTime;
 
     // map in which we'll infer heights of other keys
     CBlockIndex* pindexMax = chainActive[std::max(0, chainActive.Height() - 144)]; // the tip can be reorganised; use a 144-block safety margin
-    std::map<CKeyID, CBlockIndex*> mapKeyFirstBlock;
+    robin_hood::unordered_node_map<CKeyID, CBlockIndex*> mapKeyFirstBlock;
     std::set<CKeyID> setKeys;
     GetKeys(setKeys);
     BOOST_FOREACH (const CKeyID& keyid, setKeys) {
@@ -3868,7 +3869,7 @@ void CWallet::GetKeyBirthTimes(std::map<CKeyID, int64_t>& mapKeyBirth) const
 
     // find first block that affects those keys, if there are any left
     std::vector<CKeyID> vAffected;
-    for (std::map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); it++) {
+    for (robin_hood::unordered_node_map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); it++) {
         // iterate over all wallet transactions...
         const CWalletTx& wtx = (*it).second;
         BlockMap::const_iterator blit = mapBlockIndex.find(wtx.hashBlock);
@@ -3880,7 +3881,7 @@ void CWallet::GetKeyBirthTimes(std::map<CKeyID, int64_t>& mapKeyBirth) const
                 CAffectedKeysVisitor(*this, vAffected).Process(txout.scriptPubKey);
                 BOOST_FOREACH (const CKeyID& keyid, vAffected) {
                     // ... and all their affected keys
-                    std::map<CKeyID, CBlockIndex*>::iterator rit = mapKeyFirstBlock.find(keyid);
+                    robin_hood::unordered_node_map<CKeyID, CBlockIndex*>::iterator rit = mapKeyFirstBlock.find(keyid);
                     if (rit != mapKeyFirstBlock.end() && nHeight < rit->second->nHeight)
                         rit->second = blit->second;
                 }
@@ -3890,7 +3891,7 @@ void CWallet::GetKeyBirthTimes(std::map<CKeyID, int64_t>& mapKeyBirth) const
     }
 
     // Extract block timestamps for those keys
-    for (std::map<CKeyID, CBlockIndex*>::const_iterator it = mapKeyFirstBlock.begin(); it != mapKeyFirstBlock.end(); it++)
+    for (robin_hood::unordered_node_map<CKeyID, CBlockIndex*>::const_iterator it = mapKeyFirstBlock.begin(); it != mapKeyFirstBlock.end(); it++)
         mapKeyBirth[it->first] = it->second->GetBlockTime() - 7200; // block times can be 2h off
 }
 
@@ -3964,7 +3965,7 @@ bool CWallet::LoadDestData(const CTxDestination& dest, const std::string& key, c
 
 bool CWallet::GetDestData(const CTxDestination& dest, const std::string& key, std::string* value) const
 {
-    std::map<CTxDestination, CAddressBookData>::const_iterator i = mapAddressBook.find(dest);
+    robin_hood::unordered_node_map<CTxDestination, CAddressBookData>::const_iterator i = mapAddressBook.find(dest);
     if (i != mapAddressBook.end()) {
         CAddressBookData::StringMap::const_iterator j = i->second.destdata.find(key);
         if (j != i->second.destdata.end()) {
@@ -4406,7 +4407,7 @@ int CMerkleTx::GetTransactionLockSignatures() const
     if (!fEnableSwiftTX) return -1;
 
     //compile consessus vote
-    std::map<uint256, CTransactionLock>::iterator i = mapTxLocks.find(GetHash());
+    robin_hood::unordered_node_map<uint256, CTransactionLock>::iterator i = mapTxLocks.find(GetHash());
     if (i != mapTxLocks.end()) {
         return (*i).second.CountSignatures();
     }
@@ -4419,7 +4420,7 @@ bool CMerkleTx::IsTransactionLockTimedOut() const
     if (!fEnableSwiftTX) return 0;
 
     //compile consessus vote
-    std::map<uint256, CTransactionLock>::iterator i = mapTxLocks.find(GetHash());
+    robin_hood::unordered_node_map<uint256, CTransactionLock>::iterator i = mapTxLocks.find(GetHash());
     if (i != mapTxLocks.end()) {
         return GetTime() > (*i).second.nTimeout;
     }
@@ -4740,7 +4741,7 @@ bool CWallet::CreateZerocoinSpendTransaction(CAmount nValue, int nSecurityLevel,
             nValueToSelect = static_cast<CAmount>(ceil(dValue) * COIN);
 
         // Select the zUNIGRID mints to use in this spend
-        std::map<libzerocoin::CoinDenomination, CAmount> DenomMap = GetMyZerocoinDistribution();
+        robin_hood::unordered_node_map<libzerocoin::CoinDenomination, CAmount> DenomMap = GetMyZerocoinDistribution();
         list<CMintMeta> listMints(setMints.begin(), setMints.end());
         vMintsToFetch = SelectMintsFromList(nValueToSelect, nValueSelected, nMaxSpends, fMinimizeChange,
                                              nCoinsReturned, listMints, DenomMap, nNeededSpends);

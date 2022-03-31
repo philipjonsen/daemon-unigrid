@@ -16,6 +16,7 @@
 #include "util.h"
 #include "utiltime.h"
 #include "wallet.h"
+#include "robinhood.h"
 #include <primitives/deterministicmint.h>
 
 #include <boost/filesystem.hpp>
@@ -1321,9 +1322,9 @@ bool CWalletDB::WriteMintPoolPair(const uint256& hashMasterSeed, const uint256& 
 }
 
 //! map with hashMasterSeed as the key, paired with vector of hashPubcoins and their count
-std::map<uint256, std::vector<pair<uint256, uint32_t> > > CWalletDB::MapMintPool()
+robin_hood::unordered_node_map<uint256, std::vector<pair<uint256, uint32_t> > > CWalletDB::MapMintPool()
 {
-    std::map<uint256, std::vector<pair<uint256, uint32_t> > > mapPool;
+    robin_hood::unordered_node_map<uint256, std::vector<pair<uint256, uint32_t> > > mapPool;
     Dbc* pcursor = GetCursor();
     if (!pcursor)
         throw runtime_error(std::string(__func__)+" : cannot create DB cursor");

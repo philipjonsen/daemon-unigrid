@@ -14,6 +14,7 @@
 #include "masternodeman.h"
 #include "rpcserver.h"
 #include "utilmoneystr.h"
+#include "robinhood.h"
 
 #include <univalue.h>
 
@@ -633,7 +634,7 @@ UniValue getbudgetvotes(const UniValue& params, bool fHelp)
 
     if (pbudgetProposal == NULL) throw runtime_error("Unknown proposal name");
 
-    std::map<uint256, CBudgetVote>::iterator it = pbudgetProposal->mapVotes.begin();
+    robin_hood::unordered_node_map<uint256, CBudgetVote>::iterator it = pbudgetProposal->mapVotes.begin();
     while (it != pbudgetProposal->mapVotes.end()) {
         UniValue bObj(UniValue::VOBJ);
         bObj.push_back(Pair("mnId", (*it).second.vin.prevout.hash.ToString()));
@@ -1021,7 +1022,7 @@ UniValue mnfinalbudget(const UniValue& params, bool fHelp)
 
         if (pfinalBudget == NULL) return "Unknown budget hash";
 
-        std::map<uint256, CFinalizedBudgetVote>::iterator it = pfinalBudget->mapVotes.begin();
+        robin_hood::unordered_node_map<uint256, CFinalizedBudgetVote>::iterator it = pfinalBudget->mapVotes.begin();
         while (it != pfinalBudget->mapVotes.end()) {
             UniValue bObj(UniValue::VOBJ);
             bObj.push_back(Pair("nHash", (*it).first.ToString().c_str()));

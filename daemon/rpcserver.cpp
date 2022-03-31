@@ -16,6 +16,7 @@
 #include "ui_interface.h"
 #include "util.h"
 #include "utilstrencodings.h"
+#include "robinhood.h"
 
 #include <boost/algorithm/string/case_conv.hpp> // for to_upper()
 #include <boost/bind.hpp>
@@ -41,7 +42,7 @@ static CCriticalSection cs_rpcWarmup;
 static std::vector<RPCTimerInterface*> timerInterfaces;
 /* Map of name to timer.
  * @note Can be changed to std::unique_ptr when C++11 */
-static std::map<std::string, boost::shared_ptr<RPCTimerBase> > deadlineTimers;
+static robin_hood::unordered_node_map<std::string, boost::shared_ptr<RPCTimerBase> > deadlineTimers;
 
 static struct CRPCSignals {
     boost::signals2::signal<void()> Started;
@@ -607,7 +608,7 @@ UniValue CRPCTable::execute(const std::string& strMethod, const UniValue& params
 std::vector<std::string> CRPCTable::listCommands() const
 {
     std::vector<std::string> commandList;
-    typedef std::map<std::string, const CRPCCommand*> commandMap;
+    typedef robin_hood::unordered_node_map<std::string, const CRPCCommand*> commandMap;
 
     std::transform(mapCommands.begin(), mapCommands.end(),
         std::back_inserter(commandList),

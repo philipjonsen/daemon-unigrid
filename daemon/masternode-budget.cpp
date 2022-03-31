@@ -14,13 +14,15 @@
 #include "masternodeman.h"
 #include "obfuscation.h"
 #include "util.h"
+#include "robinhood.h"
+
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
 CBudgetManager budget;
 CCriticalSection cs_budget;
 
-std::map<uint256, int64_t> askedForSourceProposalOrBudget;
+robin_hood::unordered_node_map<uint256, int64_t> askedForSourceProposalOrBudget;
 std::vector<CBudgetProposalBroadcast> vecImmatureBudgetProposals;
 std::vector<CFinalizedBudgetBroadcast> vecImmatureFinalizedBudgets;
 
@@ -123,7 +125,7 @@ void CBudgetManager::CheckOrphanVotes()
 
 
     std::string strError = "";
-    std::map<uint256, CBudgetVote>::iterator it1 = mapOrphanMasternodeBudgetVotes.begin();
+    robin_hood::unordered_node_map<uint256, CBudgetVote>::iterator it1 = mapOrphanMasternodeBudgetVotes.begin();
     while (it1 != mapOrphanMasternodeBudgetVotes.end()) {
         if (budget.UpdateProposal(((*it1).second), NULL, strError)) {
             LogPrint("mnbudget","CBudgetManager::CheckOrphanVotes - Proposal/Budget is known, activating and removing orphan vote\n");
@@ -132,7 +134,7 @@ void CBudgetManager::CheckOrphanVotes()
             ++it1;
         }
     }
-    std::map<uint256, CFinalizedBudgetVote>::iterator it2 = mapOrphanFinalizedBudgetVotes.begin();
+    robin_hood::unordered_node_map<uint256, CFinalizedBudgetVote>::iterator it2 = mapOrphanFinalizedBudgetVotes.begin();
     while (it2 != mapOrphanFinalizedBudgetVotes.end()) {
         if (budget.UpdateFinalizedBudget(((*it2).second), NULL, strError)) {
             LogPrint("mnbudget","CBudgetManager::CheckOrphanVotes - Proposal/Budget is known, activating and removing orphan vote\n");
@@ -483,7 +485,7 @@ void CBudgetManager::CheckAndRemove()
     std::string strError = "";
 
     LogPrint("mnbudget", "CBudgetManager::CheckAndRemove - mapFinalizedBudgets cleanup - size before: %d\n", mapFinalizedBudgets.size());
-    std::map<uint256, CFinalizedBudget>::iterator it = mapFinalizedBudgets.begin();
+    robin_hood::unordered_node_map<uint256, CFinalizedBudget>::iterator it = mapFinalizedBudgets.begin();
     while (it != mapFinalizedBudgets.end()) {
         CFinalizedBudget* pfinalizedBudget = &((*it).second);
 
@@ -505,7 +507,7 @@ void CBudgetManager::CheckAndRemove()
     }
 
     LogPrint("mnbudget", "CBudgetManager::CheckAndRemove - mapProposals cleanup - size before: %d\n", mapProposals.size());
-    std::map<uint256, CBudgetProposal>::iterator it2 = mapProposals.begin();
+    robin_hood::unordered_node_map<uint256, CBudgetProposal>::iterator it2 = mapProposals.begin();
     while (it2 != mapProposals.end()) {
         CBudgetProposal* pbudgetProposal = &((*it2).second);
         pbudgetProposal->fValid = pbudgetProposal->IsValid(strError);
@@ -550,7 +552,7 @@ void CBudgetManager::FillBlockPayee(CMutableTransaction& txNew, CAmount nFees, b
 
     // ------- Grab The Highest Count
 
-    std::map<uint256, CFinalizedBudget>::iterator it = mapFinalizedBudgets.begin();
+    robin_hood::unordered_node_map<uint256, CFinalizedBudget>::iterator it = mapFinalizedBudgets.begin();
     while (it != mapFinalizedBudgets.end()) {
         CFinalizedBudget* pfinalizedBudget = &((*it).second);
         if (pfinalizedBudget->GetVoteCount() > nHighestCount &&
@@ -615,7 +617,7 @@ CBudgetProposal* CBudgetManager::FindProposal(const std::string& strProposalName
     int nYesCount = -99999;
     CBudgetProposal* pbudgetProposal = NULL;
 
-    std::map<uint256, CBudgetProposal>::iterator it = mapProposals.begin();
+    robin_hood::unordered_node_map<uint256, CBudgetProposal>::iterator it = mapProposals.begin();
     while (it != mapProposals.end()) {
         if ((*it).second.strProposalName == strProposalName && (*it).second.GetYeas() > nYesCount) {
             pbudgetProposal = &((*it).second);
@@ -644,7 +646,7 @@ bool CBudgetManager::IsBudgetPaymentBlock(int nBlockHeight)
     int nHighestCount = -1;
     int nFivePercent = mnodeman.CountEnabled(ActiveProtocol()) / 20;
 
-    std::map<uint256, CFinalizedBudget>::iterator it = mapFinalizedBudgets.begin();
+    robin_hood::unordered_node_map<uint256, CFinalizedBudget>::iterator it = mapFinalizedBudgets.begin();
     while (it != mapFinalizedBudgets.end()) {
         CFinalizedBudget* pfinalizedBudget = &((*it).second);
         if (pfinalizedBudget->GetVoteCount() > nHighestCount &&
@@ -678,7 +680,7 @@ TrxValidationStatus CBudgetManager::IsTransactionValid(const CTransaction& txNew
 
     // ------- Grab The Highest Count
 
-    std::map<uint256, CFinalizedBudget>::iterator it = mapFinalizedBudgets.begin();
+    robin_hood::unordered_node_map<uint256, CFinalizedBudget>::iterator it = mapFinalizedBudgets.begin();
     while (it != mapFinalizedBudgets.end()) {
         CFinalizedBudget* pfinalizedBudget = &((*it).second);
 
@@ -750,7 +752,7 @@ std::vector<CBudgetProposal*> CBudgetManager::GetAllProposals()
 
     std::vector<CBudgetProposal*> vBudgetProposalRet;
 
-    std::map<uint256, CBudgetProposal>::iterator it = mapProposals.begin();
+    robin_hood::unordered_node_map<uint256, CBudgetProposal>::iterator it = mapProposals.begin();
     while (it != mapProposals.end()) {
         (*it).second.CleanAndRemove(false);
 
@@ -784,7 +786,7 @@ std::vector<CBudgetProposal*> CBudgetManager::GetBudget()
 
     std::vector<std::pair<CBudgetProposal*, int> > vBudgetPorposalsSort;
 
-    std::map<uint256, CBudgetProposal>::iterator it = mapProposals.begin();
+    robin_hood::unordered_node_map<uint256, CBudgetProposal>::iterator it = mapProposals.begin();
     while (it != mapProposals.end()) {
         (*it).second.CleanAndRemove(false);
         vBudgetPorposalsSort.push_back(make_pair(&((*it).second), (*it).second.GetYeas() - (*it).second.GetNays()));
@@ -864,7 +866,7 @@ std::vector<CFinalizedBudget*> CBudgetManager::GetFinalizedBudgets()
 
     // ------- Grab The Budgets In Order
 
-    std::map<uint256, CFinalizedBudget>::iterator it = mapFinalizedBudgets.begin();
+    robin_hood::unordered_node_map<uint256, CFinalizedBudget>::iterator it = mapFinalizedBudgets.begin();
     while (it != mapFinalizedBudgets.end()) {
         CFinalizedBudget* pfinalizedBudget = &((*it).second);
 
@@ -888,7 +890,7 @@ std::string CBudgetManager::GetRequiredPaymentsString(int nBlockHeight)
 
     std::string ret = "unknown-budget";
 
-    std::map<uint256, CFinalizedBudget>::iterator it = mapFinalizedBudgets.begin();
+    robin_hood::unordered_node_map<uint256, CFinalizedBudget>::iterator it = mapFinalizedBudgets.begin();
     while (it != mapFinalizedBudgets.end()) {
         CFinalizedBudget* pfinalizedBudget = &((*it).second);
         if (nBlockHeight >= pfinalizedBudget->GetBlockStart() && nBlockHeight <= pfinalizedBudget->GetBlockEnd()) {
@@ -992,7 +994,7 @@ void CBudgetManager::NewBlock()
     //remove invalid votes once in a while (we have to check the signatures and validity of every vote, somewhat CPU intensive)
 
     LogPrint("mnbudget","CBudgetManager::NewBlock - askedForSourceProposalOrBudget cleanup - size: %d\n", askedForSourceProposalOrBudget.size());
-    std::map<uint256, int64_t>::iterator it = askedForSourceProposalOrBudget.begin();
+    robin_hood::unordered_node_map<uint256, int64_t>::iterator it = askedForSourceProposalOrBudget.begin();
     while (it != askedForSourceProposalOrBudget.end()) {
         if ((*it).second > GetTime() - (60 * 60 * 24)) {
             ++it;
@@ -1002,14 +1004,14 @@ void CBudgetManager::NewBlock()
     }
 
     LogPrint("mnbudget","CBudgetManager::NewBlock - mapProposals cleanup - size: %d\n", mapProposals.size());
-    std::map<uint256, CBudgetProposal>::iterator it2 = mapProposals.begin();
+    robin_hood::unordered_node_map<uint256, CBudgetProposal>::iterator it2 = mapProposals.begin();
     while (it2 != mapProposals.end()) {
         (*it2).second.CleanAndRemove(false);
         ++it2;
     }
 
     LogPrint("mnbudget","CBudgetManager::NewBlock - mapFinalizedBudgets cleanup - size: %d\n", mapFinalizedBudgets.size());
-    std::map<uint256, CFinalizedBudget>::iterator it3 = mapFinalizedBudgets.begin();
+    robin_hood::unordered_node_map<uint256, CFinalizedBudget>::iterator it3 = mapFinalizedBudgets.begin();
     while (it3 != mapFinalizedBudgets.end()) {
         (*it3).second.CleanAndRemove(false);
         ++it3;
@@ -1258,12 +1260,12 @@ void CBudgetManager::ResetSync()
     LOCK(cs);
 
 
-    std::map<uint256, CBudgetProposalBroadcast>::iterator it1 = mapSeenMasternodeBudgetProposals.begin();
+    robin_hood::unordered_node_map<uint256, CBudgetProposalBroadcast>::iterator it1 = mapSeenMasternodeBudgetProposals.begin();
     while (it1 != mapSeenMasternodeBudgetProposals.end()) {
         CBudgetProposal* pbudgetProposal = FindProposal((*it1).first);
         if (pbudgetProposal && pbudgetProposal->fValid) {
             //mark votes
-            std::map<uint256, CBudgetVote>::iterator it2 = pbudgetProposal->mapVotes.begin();
+            robin_hood::unordered_node_map<uint256, CBudgetVote>::iterator it2 = pbudgetProposal->mapVotes.begin();
             while (it2 != pbudgetProposal->mapVotes.end()) {
                 (*it2).second.fSynced = false;
                 ++it2;
@@ -1272,12 +1274,12 @@ void CBudgetManager::ResetSync()
         ++it1;
     }
 
-    std::map<uint256, CFinalizedBudgetBroadcast>::iterator it3 = mapSeenFinalizedBudgets.begin();
+    robin_hood::unordered_node_map<uint256, CFinalizedBudgetBroadcast>::iterator it3 = mapSeenFinalizedBudgets.begin();
     while (it3 != mapSeenFinalizedBudgets.end()) {
         CFinalizedBudget* pfinalizedBudget = FindFinalizedBudget((*it3).first);
         if (pfinalizedBudget && pfinalizedBudget->fValid) {
             //send votes
-            std::map<uint256, CFinalizedBudgetVote>::iterator it4 = pfinalizedBudget->mapVotes.begin();
+            robin_hood::unordered_node_map<uint256, CFinalizedBudgetVote>::iterator it4 = pfinalizedBudget->mapVotes.begin();
             while (it4 != pfinalizedBudget->mapVotes.end()) {
                 (*it4).second.fSynced = false;
                 ++it4;
@@ -1295,12 +1297,12 @@ void CBudgetManager::MarkSynced()
         Mark that we've sent all valid items
     */
 
-    std::map<uint256, CBudgetProposalBroadcast>::iterator it1 = mapSeenMasternodeBudgetProposals.begin();
+    robin_hood::unordered_node_map<uint256, CBudgetProposalBroadcast>::iterator it1 = mapSeenMasternodeBudgetProposals.begin();
     while (it1 != mapSeenMasternodeBudgetProposals.end()) {
         CBudgetProposal* pbudgetProposal = FindProposal((*it1).first);
         if (pbudgetProposal && pbudgetProposal->fValid) {
             //mark votes
-            std::map<uint256, CBudgetVote>::iterator it2 = pbudgetProposal->mapVotes.begin();
+            robin_hood::unordered_node_map<uint256, CBudgetVote>::iterator it2 = pbudgetProposal->mapVotes.begin();
             while (it2 != pbudgetProposal->mapVotes.end()) {
                 if ((*it2).second.fValid)
                     (*it2).second.fSynced = true;
@@ -1310,12 +1312,12 @@ void CBudgetManager::MarkSynced()
         ++it1;
     }
 
-    std::map<uint256, CFinalizedBudgetBroadcast>::iterator it3 = mapSeenFinalizedBudgets.begin();
+    robin_hood::unordered_node_map<uint256, CFinalizedBudgetBroadcast>::iterator it3 = mapSeenFinalizedBudgets.begin();
     while (it3 != mapSeenFinalizedBudgets.end()) {
         CFinalizedBudget* pfinalizedBudget = FindFinalizedBudget((*it3).first);
         if (pfinalizedBudget && pfinalizedBudget->fValid) {
             //mark votes
-            std::map<uint256, CFinalizedBudgetVote>::iterator it4 = pfinalizedBudget->mapVotes.begin();
+            robin_hood::unordered_node_map<uint256, CFinalizedBudgetVote>::iterator it4 = pfinalizedBudget->mapVotes.begin();
             while (it4 != pfinalizedBudget->mapVotes.end()) {
                 if ((*it4).second.fValid)
                     (*it4).second.fSynced = true;
@@ -1343,7 +1345,7 @@ void CBudgetManager::Sync(CNode* pfrom, uint256 nProp, bool fPartial)
 
     int nInvCount = 0;
 
-    std::map<uint256, CBudgetProposalBroadcast>::iterator it1 = mapSeenMasternodeBudgetProposals.begin();
+    robin_hood::unordered_node_map<uint256, CBudgetProposalBroadcast>::iterator it1 = mapSeenMasternodeBudgetProposals.begin();
     while (it1 != mapSeenMasternodeBudgetProposals.end()) {
         CBudgetProposal* pbudgetProposal = FindProposal((*it1).first);
         if (pbudgetProposal && pbudgetProposal->fValid && (nProp == 0 || (*it1).first == nProp)) {
@@ -1351,7 +1353,7 @@ void CBudgetManager::Sync(CNode* pfrom, uint256 nProp, bool fPartial)
             nInvCount++;
 
             //send votes
-            std::map<uint256, CBudgetVote>::iterator it2 = pbudgetProposal->mapVotes.begin();
+            robin_hood::unordered_node_map<uint256, CBudgetVote>::iterator it2 = pbudgetProposal->mapVotes.begin();
             while (it2 != pbudgetProposal->mapVotes.end()) {
                 if ((*it2).second.fValid) {
                     if ((fPartial && !(*it2).second.fSynced) || !fPartial) {
@@ -1371,7 +1373,7 @@ void CBudgetManager::Sync(CNode* pfrom, uint256 nProp, bool fPartial)
 
     nInvCount = 0;
 
-    std::map<uint256, CFinalizedBudgetBroadcast>::iterator it3 = mapSeenFinalizedBudgets.begin();
+    robin_hood::unordered_node_map<uint256, CFinalizedBudgetBroadcast>::iterator it3 = mapSeenFinalizedBudgets.begin();
     while (it3 != mapSeenFinalizedBudgets.end()) {
         CFinalizedBudget* pfinalizedBudget = FindFinalizedBudget((*it3).first);
         if (pfinalizedBudget && pfinalizedBudget->fValid && (nProp == 0 || (*it3).first == nProp)) {
@@ -1379,7 +1381,7 @@ void CBudgetManager::Sync(CNode* pfrom, uint256 nProp, bool fPartial)
             nInvCount++;
 
             //send votes
-            std::map<uint256, CFinalizedBudgetVote>::iterator it4 = pfinalizedBudget->mapVotes.begin();
+            robin_hood::unordered_node_map<uint256, CFinalizedBudgetVote>::iterator it4 = pfinalizedBudget->mapVotes.begin();
             while (it4 != pfinalizedBudget->mapVotes.end()) {
                 if ((*it4).second.fValid) {
                     if ((fPartial && !(*it4).second.fSynced) || !fPartial) {
@@ -1599,7 +1601,7 @@ bool CBudgetProposal::AddOrUpdateVote(CBudgetVote& vote, std::string& strError)
 // If masternode voted for a proposal, but is now invalid -- remove the vote
 void CBudgetProposal::CleanAndRemove(bool fSignatureCheck)
 {
-    std::map<uint256, CBudgetVote>::iterator it = mapVotes.begin();
+    robin_hood::unordered_node_map<uint256, CBudgetVote>::iterator it = mapVotes.begin();
 
     while (it != mapVotes.end()) {
         (*it).second.fValid = (*it).second.SignatureValid(fSignatureCheck);
@@ -1612,7 +1614,7 @@ double CBudgetProposal::GetRatio()
     int yeas = 0;
     int nays = 0;
 
-    std::map<uint256, CBudgetVote>::iterator it = mapVotes.begin();
+    robin_hood::unordered_node_map<uint256, CBudgetVote>::iterator it = mapVotes.begin();
 
     while (it != mapVotes.end()) {
         if ((*it).second.nVote == VOTE_YES) yeas++;
@@ -1629,7 +1631,7 @@ int CBudgetProposal::GetYeas()
 {
     int ret = 0;
 
-    std::map<uint256, CBudgetVote>::iterator it = mapVotes.begin();
+    robin_hood::unordered_node_map<uint256, CBudgetVote>::iterator it = mapVotes.begin();
     while (it != mapVotes.end()) {
         if ((*it).second.nVote == VOTE_YES && (*it).second.fValid) ret++;
         ++it;
@@ -1642,7 +1644,7 @@ int CBudgetProposal::GetNays()
 {
     int ret = 0;
 
-    std::map<uint256, CBudgetVote>::iterator it = mapVotes.begin();
+    robin_hood::unordered_node_map<uint256, CBudgetVote>::iterator it = mapVotes.begin();
     while (it != mapVotes.end()) {
         if ((*it).second.nVote == VOTE_NO && (*it).second.fValid) ret++;
         ++it;
@@ -1655,7 +1657,7 @@ int CBudgetProposal::GetAbstains()
 {
     int ret = 0;
 
-    std::map<uint256, CBudgetVote>::iterator it = mapVotes.begin();
+    robin_hood::unordered_node_map<uint256, CBudgetVote>::iterator it = mapVotes.begin();
     while (it != mapVotes.end()) {
         if ((*it).second.nVote == VOTE_ABSTAIN && (*it).second.fValid) ret++;
         ++it;
@@ -1947,7 +1949,7 @@ void CFinalizedBudget::AutoCheck()
 // If masternode voted for a proposal, but is now invalid -- remove the vote
 void CFinalizedBudget::CleanAndRemove(bool fSignatureCheck)
 {
-    std::map<uint256, CFinalizedBudgetVote>::iterator it = mapVotes.begin();
+    robin_hood::unordered_node_map<uint256, CFinalizedBudgetVote>::iterator it = mapVotes.begin();
 
     while (it != mapVotes.end()) {
         (*it).second.fValid = (*it).second.SignatureValid(fSignatureCheck);

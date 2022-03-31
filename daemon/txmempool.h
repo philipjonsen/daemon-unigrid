@@ -14,6 +14,7 @@
 #include "coins.h"
 #include "primitives/transaction.h"
 #include "sync.h"
+#include "robinhood.h"
 
 class CAutoFile;
 
@@ -105,9 +106,9 @@ private:
 
 public:
     mutable CCriticalSection cs;
-    std::map<uint256, CTxMemPoolEntry> mapTx;
-    std::map<COutPoint, CInPoint> mapNextTx;
-    std::map<uint256, std::pair<double, CAmount> > mapDeltas;
+    robin_hood::unordered_node_map<uint256, CTxMemPoolEntry> mapTx;
+    robin_hood::unordered_node_map<COutPoint, CInPoint> mapNextTx;
+    robin_hood::unordered_node_map<uint256, std::pair<double, CAmount> > mapDeltas;
 
     CTxMemPool(const CFeeRate& _minRelayFee);
     ~CTxMemPool();

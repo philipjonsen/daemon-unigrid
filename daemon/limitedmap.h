@@ -7,6 +7,7 @@
 
 #include <assert.h>
 #include <map>
+#include "robinhood.h"
 
 /** STL-like map container that only keeps the N elements with the highest value. */
 template <typename K, typename V>
@@ -16,12 +17,12 @@ public:
     typedef K key_type;
     typedef V mapped_type;
     typedef std::pair<const key_type, mapped_type> value_type;
-    typedef typename std::map<K, V>::const_iterator const_iterator;
-    typedef typename std::map<K, V>::size_type size_type;
+    typedef typename robin_hood::unordered_node_map<K, V>::const_iterator const_iterator;
+    typedef typename robin_hood::unordered_node_map<K, V>::size_type size_type;
 
 protected:
-    std::map<K, V> map;
-    typedef typename std::map<K, V>::iterator iterator;
+    robin_hood::unordered_node_map<K, V> map;
+    typedef typename robin_hood::unordered_node_map<K, V>::iterator iterator;
     std::multimap<V, iterator> rmap;
     typedef typename std::multimap<V, iterator>::iterator rmap_iterator;
     size_type nMaxSize;

@@ -41,6 +41,7 @@
 #include "invalid.h"
 #include "libzerocoin/Denominations.h"
 #include "primitives/zerocoin.h"
+#include "robinhood.h"
 
 #include <cstdio>
 #include <sstream>
@@ -272,7 +273,7 @@ private:
     }
 
 private:
-    std::map<int, int> points;
+    robin_hood::unordered_node_map<int, int> points;
     size_t maxSize;
     size_t maxAvg;
 };
@@ -918,7 +919,7 @@ int GetInputAgeIX(uint256 nTXHash, CTxIn& vin)
     if (nResult < 0) nResult = 0;
 
     if (nResult < 6) {
-        std::map<uint256, CTransactionLock>::iterator i = mapTxLocks.find(nTXHash);
+        robin_hood::unordered_node_map<uint256, CTransactionLock>::iterator i = mapTxLocks.find(nTXHash);
         if (i != mapTxLocks.end()) {
             sigs = (*i).second.CountSignatures();
         }
@@ -934,7 +935,7 @@ int GetIXConfirmations(uint256 nTXHash)
 {
     int sigs = 0;
 
-    std::map<uint256, CTransactionLock>::iterator i = mapTxLocks.find(nTXHash);
+    robin_hood::unordered_node_map<uint256, CTransactionLock>::iterator i = mapTxLocks.find(nTXHash);
     if (i != mapTxLocks.end()) {
         sigs = (*i).second.CountSignatures();
     }
@@ -2350,7 +2351,7 @@ void static InvalidBlockFound(CBlockIndex* pindex, const CValidationState& state
 {
     int nDoS = 0;
     if (state.IsInvalid(nDoS)) {
-        std::map<uint256, NodeId>::iterator it = mapBlockSource.find(pindex->GetBlockHash());
+        robin_hood::unordered_node_map<uint256, NodeId>::iterator it = mapBlockSource.find(pindex->GetBlockHash());
         if (it != mapBlockSource.end() && State(it->second)) {
             CBlockReject reject = {state.GetRejectCode(), state.GetRejectReason().substr(0, MAX_REJECT_MESSAGE_LENGTH), pindex->GetBlockHash()};
             State(it->second)->rejects.push_back(reject);

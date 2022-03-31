@@ -20,6 +20,7 @@
 #include "compat.h"
 #include "tinyformat.h"
 #include "utiltime.h"
+#include "robinhood.h"
 
 #include <exception>
 #include <map>
@@ -49,8 +50,8 @@ extern bool fSucessfullyLoaded;
 extern std::vector<int64_t> obfuScationDenominations;
 extern std::string strBudgetMode;
 
-extern std::map<std::string, std::string> mapArgs;
-extern std::map<std::string, std::vector<std::string> > mapMultiArgs;
+extern robin_hood::unordered_node_map<std::string, std::string> mapArgs;
+extern robin_hood::unordered_node_map<std::string, std::vector<std::string> > mapMultiArgs;
 extern bool fDebug;
 extern bool fPrintToConsole;
 extern bool fPrintToDebugLog;
@@ -127,7 +128,7 @@ boost::filesystem::path GetSslKey();
 boost::filesystem::path GetPidFile();
 void CreatePidFile(const boost::filesystem::path& path, pid_t pid);
 #endif
-void ReadConfigFile(std::map<std::string, std::string>& mapSettingsRet, std::map<std::string, std::vector<std::string> >& mapMultiSettingsRet);
+void ReadConfigFile(robin_hood::unordered_node_map<std::string, std::string>& mapSettingsRet, robin_hood::unordered_node_map<std::string, std::vector<std::string> >& mapMultiSettingsRet);
 #ifdef WIN32
 boost::filesystem::path GetSpecialFolderPath(int nFolder, bool fCreate = true);
 #endif

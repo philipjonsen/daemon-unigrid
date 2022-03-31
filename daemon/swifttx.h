@@ -14,6 +14,7 @@
 #include "spork.h"
 #include "sync.h"
 #include "util.h"
+#include "robinhood.h"
 
 /*
     At 15 signatures, 1/2 of the masternode network can be owned by
@@ -40,7 +41,7 @@ extern map<uint256, CTransaction> mapTxLockReq;
 extern map<uint256, CTransaction> mapTxLockReqRejected;
 extern map<uint256, CConsensusVote> mapTxLockVote;
 extern map<uint256, CTransactionLock> mapTxLocks;
-extern std::map<COutPoint, uint256> mapLockedInputs;
+extern robin_hood::unordered_node_map<COutPoint, uint256> mapLockedInputs;
 extern int nCompleteTXLocks;
 
 

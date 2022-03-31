@@ -10,12 +10,14 @@
 #include "obfuscation.h"
 #include "sync.h"
 #include "util.h"
+#include "robinhood.h"
+
 #include <boost/lexical_cast.hpp>
 
 // keep track of the scanning errors I've seen
 map<uint256, int> mapSeenMasternodeScanningErrors;
 // cache block hashes as we calculate them
-std::map<int64_t, uint256> mapCacheBlockHashes;
+robin_hood::unordered_node_map<int64_t, uint256> mapCacheBlockHashes;
 
 //Get the last hash that matches the modulus given. Processed in reverse order
 bool GetBlockHash(uint256& hash, int nBlockHeight)

@@ -14,6 +14,7 @@
 #include "uint256.h"
 #include "util.h"
 #include "libzerocoin/Denominations.h"
+#include "robinhood.h"
 
 #include <vector>
 
@@ -180,7 +181,7 @@ public:
     uint32_t nSequenceId;
     
     //! zerocoin specific fields
-    std::map<libzerocoin::CoinDenomination, int64_t> mapZerocoinSupply;
+    robin_hood::unordered_node_map<libzerocoin::CoinDenomination, int64_t> mapZerocoinSupply;
     std::vector<libzerocoin::CoinDenomination> vMintDenominationsInBlock;
 
     void SetNull()

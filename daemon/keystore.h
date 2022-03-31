@@ -11,6 +11,7 @@
 #include "key.h"
 #include "pubkey.h"
 #include "sync.h"
+#include "robinhood.h"
 
 #include <boost/signals2/signal.hpp>
 
@@ -54,8 +55,8 @@ public:
     virtual bool HaveMultiSig() const = 0;
 };
 
-typedef std::map<CKeyID, CKey> KeyMap;
-typedef std::map<CScriptID, CScript> ScriptMap;
+typedef robin_hood::unordered_node_map<CKeyID, CKey> KeyMap;
+typedef robin_hood::unordered_node_map<CScriptID, CScript> ScriptMap;
 typedef std::set<CScript> WatchOnlySet;
 typedef std::set<CScript> MultiSigScriptSet;
 
@@ -90,6 +91,6 @@ public:
 };
 
 typedef std::vector<unsigned char, secure_allocator<unsigned char> > CKeyingMaterial;
-typedef std::map<CKeyID, std::pair<CPubKey, std::vector<unsigned char> > > CryptedKeyMap;
+typedef robin_hood::unordered_node_map<CKeyID, std::pair<CPubKey, std::vector<unsigned char> > > CryptedKeyMap;
 
 #endif // BITCOIN_KEYSTORE_H
