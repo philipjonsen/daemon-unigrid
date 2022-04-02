@@ -184,7 +184,6 @@ BITCOIN_CORE_H = \
   wallet_ismine.h \
   walletdb.h \
   websochet.h \
-  websocketsignal.h \
   zpivchain.h \
   zpivtracker.h \
   zpivwallet.h \
@@ -240,7 +239,6 @@ libbitcoin_server_a_SOURCES = \
   txdb.cpp \
   txmempool.cpp \
   validationinterface.cpp \
-  websocket.cpp \
   xz/xz_crc32.c \
   xz/xz_dec_lzma2.c \
   xz/xz_dec_stream.c \
