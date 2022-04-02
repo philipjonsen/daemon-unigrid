@@ -24,13 +24,11 @@ public:
 
     const std::string& DataDir() const { return strDataDir; }
     int RPCPort() const { return nRPCPort; }
-    int WebSocketPort() const { return nWebSocketPort; }
 
 protected:
     CBaseChainParams() {}
 
     int nRPCPort;
-    int nWebSocketPort;
 
     std::string strDataDir;
     Network networkID;

@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "supplycache.h"
-#include "websocket.h"
 
 class CScheduler;
 class CWallet;
@@ -26,7 +25,6 @@ class thread_group;
 extern CWallet* pwalletMain;
 extern CzUNIGRIDWallet* zwalletMain;
 extern SupplyCache supplyCache;
-extern CWebSocket webSocket;
 
 void StartShutdown();
 bool ShutdownRequested();
