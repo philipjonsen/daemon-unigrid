@@ -183,7 +183,6 @@ BITCOIN_CORE_H = \
   wallet.h \
   wallet_ismine.h \
   walletdb.h \
-  websochet.h \
   zpivchain.h \
   zpivtracker.h \
   zpivwallet.h \
