@@ -234,6 +234,14 @@ apt-get install make git ruby sudo apt-cacher-ng qemu-utils debootstrap lxc pyth
 adduser debian sudo
 ```
 
+**Note**: adduser for Debian 10 wont work so use the below
+
+```
+su -l
+adduser debian sudo
+logout
+```
+
 When you get a colorful screen with a question about the 'LXC directory', just
 go with the default (`/var/lib/lxc`).
 
