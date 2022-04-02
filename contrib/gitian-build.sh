@@ -177,8 +177,9 @@ then
 fi
 
 export USE_LXC=1
-export LXC_BRIDGE=lxcbr0
-sudo ifconfig lxcbr0 up 10.0.2.2
+export LXC_BRIDGE=br0
+export GITIAN_HOST_IP=10.0.3.1 LXC_GUEST_IP=10.0.3.5
+sudo ifconfig br0 up 10.0.2.2
 sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 sudo echo 1 > /proc/sys/net/ipv4/ip_forward
 
@@ -226,8 +227,13 @@ then
     sudo apt-get -y install git ruby sudo apt-cacher-ng qemu-utils debootstrap lxc python-cheetah parted kpartx bridge-utils
     git clone https://github.com/devrandom/gitian-builder.git
     pushd ./gitian-builder
-    sudo apt-get install lxc
-    bin/make-base-vm --suite bionic --arch amd64 --lxc
+	sed -i 's/old-releases/archive/g' gitian-builder/bin/make-base-vm
+	cd gitian-builder
+    mkdir inputs
+    cd inputs
+    wget https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX10.11.sdk.tar.xz
+    cd ..
+	bin/make-base-vm --suite bionic --arch amd64 --lxc
     popd
 fi
 
