@@ -20,6 +20,11 @@ BITCOIN_CLI_BIN=$(top_builddir)/daemon/$(BITCOIN_CLI_NAME)$(EXEEXT)
 empty :=
 space := $(empty) $(empty)
 
+OSX_VOLNAME = $(subst $(space),-,$(PACKAGE_NAME))
+OSX_DMG = $(OSX_VOLNAME).dmg
+OSX_DSSTORE_GEN=$(top_srcdir)/contrib/macdeploy/custom_dsstore.py
+OSX_FANCY_PLIST=$(top_srcdir)/contrib/macdeploy/fancy.plist
+
 DIST_DOCS = $(wildcard doc/*.md) $(wildcard doc/release-notes/*.md)
 DIST_CONTRIB = $(top_srcdir)/contrib/unigrid-cli.bash-completion \
 	       $(top_srcdir)/contrib/unigrid-tx.bash-completion \
