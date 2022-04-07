@@ -129,12 +129,12 @@ script: |
   pushd temp
   tar xf ../$SOURCEDIST
   find unigrid-* | sort | tar --no-recursion --mode='u+rw,go+r-w,a+X' --owner=0 --group=0 -c -T - | gzip -9n > ../$SOURCEDIST
-  mkdir -p $OUTDIR/src
-  cp ../$SOURCEDIST $OUTDIR/src
+  mkdir -p $OUTDIR/daemon
+  cp ../$SOURCEDIST $OUTDIR/daemon
   popd
 
   # Workaround for tarball not building with the bare tag version (prep)
-  make -C src obj/build.h
+  make -C daemon obj/build.h
 
   ORIGPATH="$PATH"
   # Extract the release tarball into a dir for each host and build
@@ -148,12 +148,12 @@ script: |
 
     # Workaround for tarball not building with the bare tag version
     echo '#!/bin/true' >share/genbuild.sh
-    mkdir src/obj
-    cp ../src/obj/build.h src/obj/
+    mkdir daemon/obj
+    cp ../daemon/obj/build.h daemon/obj/
 
     CONFIG_SITE=${BASEPREFIX}/${i}/share/config.site ./configure --prefix=/ --disable-ccache --disable-maintainer-mode --disable-dependency-tracking ${CONFIGFLAGS} CFLAGS="${HOST_CFLAGS}" CXXFLAGS="${HOST_CXXFLAGS}"
     make ${MAKEOPTS}
-    make ${MAKEOPTS} -C src check-security
+    make ${MAKEOPTS} -C daemon check-security
     make deploy
     make install DESTDIR=${INSTALLPATH}
     rename 's/-setup\.exe$/-setup-unsigned.exe/' *-setup.exe

@@ -118,7 +118,7 @@ script: |
   popd
 
   # Workaround for tarball not building with the bare tag version (prep)
-  make -C src obj/build.h
+  make -C daemon obj/build.h
 
   ORIGPATH="$PATH"
   # Extract the release tarball into a dir for each host and build
@@ -132,8 +132,8 @@ script: |
 
     # Workaround for tarball not building with the bare tag version
     echo '#!/bin/true' >share/genbuild.sh
-    mkdir src/obj
-    cp ../src/obj/build.h src/obj/
+    mkdir daemon/obj
+    cp ../daemon/obj/build.h daemon/obj/
 
     CONFIG_SITE=${BASEPREFIX}/${i}/share/config.site ./configure --prefix=/ --disable-ccache --disable-maintainer-mode --disable-dependency-tracking ${CONFIGFLAGS}
     make ${MAKEOPTS}
@@ -164,6 +164,6 @@ script: |
     find ${DISTNAME} | sort | tar --no-recursion --mode='u+rw,go+r-w,a+X' --owner=0 --group=0 -c -T - | gzip -9n > ${OUTDIR}/${DISTNAME}-${i}.tar.gz
     cd ../../
   done
-  mkdir -p $OUTDIR/src
-  mv $SOURCEDIST $OUTDIR/src
+  mkdir -p $OUTDIR/daemon
+  mv $SOURCEDIST $OUTDIR/daemon
   mv ${OUTDIR}/${DISTNAME}-x86_64-*.tar.gz ${OUTDIR}/${DISTNAME}-osx64.tar.gz

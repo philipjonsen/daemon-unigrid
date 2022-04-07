@@ -153,7 +153,7 @@ script: |
   popd
 
   # Workaround for tarball not building with the bare tag version (prep)
-  make -C src obj/build.h
+  make -C daemon obj/build.h
 
   ORIGPATH="$PATH"
   # Extract the release tarball into a dir for each host and build
@@ -167,12 +167,12 @@ script: |
 
     # Workaround for tarball not building with the bare tag version
     echo '#!/bin/true' >share/genbuild.sh
-    mkdir src/obj
-    cp ../src/obj/build.h src/obj/
+    mkdir daemon/obj
+    cp ../daemon/obj/build.h daemon/obj/
 
     CONFIG_SITE=${BASEPREFIX}/${i}/share/config.site ./configure --prefix=/ --disable-ccache --disable-maintainer-mode --disable-dependency-tracking ${CONFIGFLAGS} CFLAGS="${HOST_CFLAGS}" CXXFLAGS="${HOST_CXXFLAGS}" LDFLAGS="${HOST_LDFLAGS}"
     make ${MAKEOPTS}
-    make ${MAKEOPTS} -C src check-security
+    make ${MAKEOPTS} -C daemon check-security
 
     #TODO: This is a quick hack that disables symbol checking for arm.
     #      Instead, we should investigate why these are popping up.
@@ -182,7 +182,7 @@ script: |
        aarch64-*) : ;;
        arm-*) : ;;
        riscv64-*) : ;;
-       *) make ${MAKEOPTS} -C src check-symbols ;;
+       *) make ${MAKEOPTS} -C daemon check-symbols ;;
     esac
 
     make install DESTDIR=${INSTALLPATH}
@@ -197,5 +197,5 @@ script: |
     cd ../../
     rm -rf distsrc-${i}
   done
-  mkdir -p $OUTDIR/src
-  mv $SOURCEDIST $OUTDIR/src
+  mkdir -p $OUTDIR/daemon
+  mv $SOURCEDIST $OUTDIR/daemon
