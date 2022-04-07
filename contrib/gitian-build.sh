@@ -16,7 +16,7 @@ osx=true
 # Other Basic variables
 SIGNER="the-unigrid-developers"
 VERSION=2.0.1
-commit=false
+commit=true
 url=https://github.com/unigrid-project/daemon.git
 proc=6
 mem=2000
