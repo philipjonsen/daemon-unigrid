@@ -179,7 +179,7 @@ fi
 export USE_LXC=1
 export LXC_BRIDGE=br0
 export GITIAN_HOST_IP=10.0.3.1 LXC_GUEST_IP=10.0.3.5
-sudo ifconfig br0 up 10.0.2.2
+#sudo ifconfig br0 up 10.0.3.1
 sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 sudo echo 1 > /proc/sys/net/ipv4/ip_forward
 
