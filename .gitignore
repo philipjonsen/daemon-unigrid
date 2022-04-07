@@ -106,7 +106,8 @@ CMakeLists.txt
 cmake-build-debug
 
 *.pc
-*config.h*
+# 
+*-config.h*
 
 #db ignore
 db-4.8.30.NC.tar.gz
