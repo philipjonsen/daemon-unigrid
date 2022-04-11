@@ -279,8 +279,8 @@ then
 	    echo ""
 	    ./bin/gbuild -j ${proc} -m ${mem} --commit unigrid=${COMMIT} --url unigrid=${url} ../unigrid-build/contrib/gitian-descriptors/gitian-win.yml
 	    ./bin/gsign -p $signProg --signer $SIGNER --release ${VERSION}-win-unsigned --destination ../gitian.sigs/ ../unigrid-build/contrib/gitian-descriptors/gitian-win.yml
-	    mv build/out/daemon/unigrid-*-win-unsigned.tar.gz inputs/unigrid-win-unsigned.tar.gz
-	    mv build/out/daemon/unigrid-*.zip build/out/daemon/unigrid-*.exe ../unigrid-binaries/${VERSION}
+	    mv build/out/unigrid-*-win-unsigned.tar.gz inputs/unigrid-win-unsigned.tar.gz
+	    mv build/out/unigrid-*.zip build/out/unigrid-*.exe ../unigrid-binaries/${VERSION}
 	fi
 	# Mac OSX
 	if [[ $osx = true ]]
@@ -290,8 +290,8 @@ then
 	    echo ""
 	    ./bin/gbuild -j ${proc} -m ${mem} --commit unigrid=${COMMIT} --url unigrid=${url} ../unigrid-build/contrib/gitian-descriptors/gitian-osx.yml
 	    ./bin/gsign -p $signProg --signer $SIGNER --release ${VERSION}-osx-unsigned --destination ../gitian.sigs/ ../unigrid-build/contrib/gitian-descriptors/gitian-osx.yml
-	    mv build/out/daemon/unigrid-*-osx-unsigned.tar.gz inputs/unigrid-osx-unsigned.tar.gz
-	    mv build/out/daemon/unigrid-*.tar.gz build/out/daemon/unigrid-*.dmg ../unigrid-binaries/${VERSION}
+	    mv build/out/unigrid-*-osx-unsigned.tar.gz inputs/unigrid-osx-unsigned.tar.gz
+	    mv build/out/unigrid-*.tar.gz build/out/unigrid-*.dmg ../unigrid-binaries/${VERSION}
 	fi
 	popd
 
