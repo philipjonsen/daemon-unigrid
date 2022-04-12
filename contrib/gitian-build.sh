@@ -280,7 +280,7 @@ then
 	    ./bin/gbuild -j ${proc} -m ${mem} --commit unigrid=${COMMIT} --url unigrid=${url} ../unigrid-build/contrib/gitian-descriptors/gitian-win.yml
 	    ./bin/gsign -p $signProg --signer $SIGNER --release ${VERSION}-win-unsigned --destination ../gitian.sigs/ ../unigrid-build/contrib/gitian-descriptors/gitian-win.yml
 	    mv build/out/unigrid-*-win-unsigned.tar.gz inputs/unigrid-win-unsigned.tar.gz
-	    mv build/out/unigrid-*.zip build/out/daemon/unigrid-*.exe ../unigrid-binaries/${VERSION}
+	    mv build/out/unigrid-*.zip ../unigrid-binaries/${VERSION}
 	fi
 	# Mac OSX
 	if [[ $osx = true ]]
