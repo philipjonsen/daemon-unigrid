@@ -21,7 +21,6 @@ empty :=
 space := $(empty) $(empty)
 
 OSX_VOLNAME = $(subst $(space),-,$(PACKAGE_NAME))
-OSX_DMG = $(OSX_VOLNAME).dmg
 OSX_DSSTORE_GEN=$(top_srcdir)/contrib/macdeploy/custom_dsstore.py
 OSX_FANCY_PLIST=$(top_srcdir)/contrib/macdeploy/fancy.plist
 

@@ -28,7 +28,6 @@ script: |
   done
 
   UNSIGNED=unigrid-osx-unsigned.tar.gz
-  SIGNED=unigrid-osx-signed.dmg
 
   tar -xf ${UNSIGNED}
   OSX_VOLNAME="$(cat osx_volname)"
