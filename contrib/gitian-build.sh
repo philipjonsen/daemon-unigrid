@@ -290,7 +290,6 @@ then
 	    echo ""
 	    ./bin/gbuild -j ${proc} -m ${mem} --commit unigrid=${COMMIT} --url unigrid=${url} ../unigrid-build/contrib/gitian-descriptors/gitian-osx.yml
 	    ./bin/gsign -p $signProg --signer $SIGNER --release ${VERSION}-osx-unsigned --destination ../gitian.sigs/ ../unigrid-build/contrib/gitian-descriptors/gitian-osx.yml
-	    mv build/out/unigrid-*-osx-unsigned.tar.gz inputs/unigrid-osx-unsigned.tar.gz
 	    mv build/out/unigrid-*.tar.gz ../unigrid-binaries/${VERSION}
 	fi
 	popd
