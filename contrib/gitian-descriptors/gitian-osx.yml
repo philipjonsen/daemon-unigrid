@@ -139,9 +139,6 @@ script: |
     make ${MAKEOPTS}
     make install-strip DESTDIR=${INSTALLPATH}
 
-    find . | sort | tar --no-recursion --mode='u+rw,go+r-w,a+X' --owner=0 --group=0 -c -T - | gzip -9n > ${OUTDIR}/${DISTNAME}-osx-unsigned.tar.gz
-    popd
-
     make deploy
 
     cd installed
