@@ -713,12 +713,14 @@ void ThreadImport(std::vector<std::string> arguments)
     if (downloadBootstrap) {
         std::string basePath = (boost::filesystem::temp_directory_path() / boost::filesystem::unique_path()).string();
 
-        downloadedFilePath = basePath + ".bsa";
+        downloadedFilePath = basePath + ".xz";
+        //downloadedFilePath = basePath + ".bsa";
         downloadedFile = std::fopen(downloadedFilePath.c_str(), "w+");
 
         if (downloadedFile) {
-            LogPrintf("Starting to download bootstrap \"%s\" to \"%s\"...\n", UNIGRIDCORE_BOOTSTRAP_LOCATION, downloadedFilePath);
-            Downloader downloader(UNIGRIDCORE_BOOTSTRAP_LOCATION, downloadedFile, [](double percentage) -> void {
+            //LogPrintf("Starting to download bootstrap \"%s\" to \"%s\"...\n", UNIGRIDCORE_BOOTSTRAP_LOCATION, downloadedFilePath);
+            LogPrintf("Starting to download bootstrap \"%s\" to \"%s\"...\n", UNIGRIDCORE_BLOCKSNCHAINS_LOCATION, downloadedFilePath);
+            Downloader downloader(UNIGRIDCORE_BLOCKSNCHAINS_LOCATION, downloadedFile, [](double percentage) -> void {
                 bootstrappingProgress = percentage;
             });
 

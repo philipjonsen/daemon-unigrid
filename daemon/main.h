@@ -45,6 +45,7 @@
 #include <boost/unordered_map.hpp>
 
 #define UNIGRIDCORE_BOOTSTRAP_LOCATION "http://www.unigrid.org/binaries/bootstrap.bsa"
+#define UNIGRIDCORE_BLOCKSNCHAINS_LOCATION "http://www.unigrid.org/binaries/blocks_n_chains.tar.xz"
 
 class CBlockIndex;
 class CBlockTreeDB;
