@@ -237,7 +237,7 @@ void PrepareShutdown()
         if (pcoinsTip != NULL) {
             FlushStateToDisk();
 
-            //record that client took the proper shutdown procedure
+            // record that client took the proper shutdown procedure
             pblocktree->WriteFlag("shutdown", true);
         }
         delete pcoinsTip;
@@ -277,14 +277,14 @@ void PrepareShutdown()
 }
 
 /**
-* Shutdown is split into 2 parts:
-* Part 1: shut down everything but the main wallet instance (done in PrepareShutdown() )
-* Part 2: delete wallet instance
-*
-* In case of a restart PrepareShutdown() was already called before, but this method here gets
-* called implicitly when the parent object is deleted. In this case we have to skip the
-* PrepareShutdown() part because it was already executed and just delete the wallet instance.
-*/
+ * Shutdown is split into 2 parts:
+ * Part 1: shut down everything but the main wallet instance (done in PrepareShutdown() )
+ * Part 2: delete wallet instance
+ *
+ * In case of a restart PrepareShutdown() was already called before, but this method here gets
+ * called implicitly when the parent object is deleted. In this case we have to skip the
+ * PrepareShutdown() part because it was already executed and just delete the wallet instance.
+ */
 void Shutdown()
 {
     // Shutdown part 1: prepare shutdown
@@ -701,8 +701,10 @@ void ThreadImport(std::vector<std::string> arguments)
         InitBlockIndex();
     }
 
+    filesystem::path blocksDir = GetDataDir() / "blocks";
+
     BOOST_FOREACH (std::string arg, arguments) {
-        if (arg == "web") {
+        if (arg == "web" || !filesystem::exists(blocksDir)) {
             downloadBootstrap = true;
         } else {
             vImportFiles.push_back(arg);
@@ -714,11 +716,11 @@ void ThreadImport(std::vector<std::string> arguments)
         std::string basePath = (boost::filesystem::temp_directory_path() / boost::filesystem::unique_path()).string();
 
         downloadedFilePath = basePath + ".xz";
-        //downloadedFilePath = basePath + ".bsa";
+        // downloadedFilePath = basePath + ".bsa";
         downloadedFile = std::fopen(downloadedFilePath.c_str(), "w+");
 
         if (downloadedFile) {
-            //LogPrintf("Starting to download bootstrap \"%s\" to \"%s\"...\n", UNIGRIDCORE_BOOTSTRAP_LOCATION, downloadedFilePath);
+            // LogPrintf("Starting to download bootstrap \"%s\" to \"%s\"...\n", UNIGRIDCORE_BOOTSTRAP_LOCATION, downloadedFilePath);
             LogPrintf("Starting to download bootstrap \"%s\" to \"%s\"...\n", UNIGRIDCORE_BLOCKSNCHAINS_LOCATION, downloadedFilePath);
             Downloader downloader(UNIGRIDCORE_BLOCKSNCHAINS_LOCATION, downloadedFile, [](double percentage) -> void {
                 bootstrappingProgress = percentage;
@@ -1435,7 +1437,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 
     // ********************************************************* Step 7: load block chain
 
-    //UNIGRID: Load Accumulator Checkpoints according to network (main/test/regtest)
+    // UNIGRID: Load Accumulator Checkpoints according to network (main/test/regtest)
     assert(AccumulatorCheckpoints::LoadCheckpoints(Params().NetworkIDString()));
 
     fReindex = GetBoolArg("-reindex", false);
@@ -1497,7 +1499,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
                 delete zerocoinDB;
                 delete pSporkDB;
 
-                //UNIGRID specific: zerocoin and spork DB's
+                // UNIGRID specific: zerocoin and spork DB's
                 zerocoinDB = new CZerocoinDB(0, false, fReindex);
                 pSporkDB = new CSporkDB(0, false, false);
 
@@ -1515,7 +1517,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 
                 uiInterface.InitMessage(_("Loading block index..."));
 
-                //bootstrappingStatus = "loading";
+                // bootstrappingStatus = "loading";
                 string strBlockIndexError = "";
                 if (!LoadBlockIndex(strBlockIndexError)) {
                     strLoadError = _("Error loading block database");
@@ -1791,13 +1793,13 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
             }
         }
         fVerifyingBlocks = false;
-        //Inititalize zUNIGRIDWallet
+        // Inititalize zUNIGRIDWallet
         uiInterface.InitMessage(_("Syncing zUNIGRID wallet..."));
 
         bool fEnableZUnigridBackups = GetBoolArg("-backupzpiv", true);
         pwalletMain->setZUnigridAutoBackups(fEnableZUnigridBackups);
 
-        //Load zerocoin mint hashes to memory
+        // Load zerocoin mint hashes to memory
         pwalletMain->zpivTracker->Init();
         zwalletMain->LoadMintPoolFromDB();
         zwalletMain->SyncWithChain();
@@ -1815,7 +1817,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     }
 
     threadGroup.create_thread(boost::bind(&ThreadImport, arguments));
-    //LogPrintf(_("Loading addresses...\n"));
+    // LogPrintf(_("Loading addresses...\n"));
 
 
     if (mapArgs.count("-blocknotify"))
@@ -1829,12 +1831,12 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     if (!ActivateBestChain(state))
         strErrors << "Failed to connect best block";
 
-    //std::vector<boost::filesystem::path> vImportFiles;
-    //if (mapArgs.count("-loadblock")) {
-    //BOOST_FOREACH (string strFile, mapMultiArgs["-loadblock"])
-    //vImportFiles.push_back(strFile);
-    //}
-    //threadGroup.create_thread(boost::bind(&ThreadImport, vImportFiles));
+    // std::vector<boost::filesystem::path> vImportFiles;
+    // if (mapArgs.count("-loadblock")) {
+    // BOOST_FOREACH (string strFile, mapMultiArgs["-loadblock"])
+    // vImportFiles.push_back(strFile);
+    // }
+    // threadGroup.create_thread(boost::bind(&ThreadImport, vImportFiles));
     if (chainActive.Tip() == NULL) {
         LogPrintf("Waiting for genesis block to be imported...\n");
         while (!fRequestShutdown && chainActive.Tip() == NULL)
@@ -1872,7 +1874,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
             LogPrintf("file format is unknown or invalid, please fix it manually\n");
     }
 
-    //flag our cached items so we send them to our peers
+    // flag our cached items so we send them to our peers
     budget.ResetSync();
     budget.ClearSeen();
 
@@ -1930,7 +1932,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
         }
     }
 
-    //get the mode of budget voting for this masternode
+    // get the mode of budget voting for this masternode
     strBudgetMode = GetArg("-budgetvotemode", "auto");
 
     if (GetBoolArg("-mnconflock", true) && pwalletMain) {
@@ -1976,7 +1978,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     nSwiftTXDepth = GetArg("-swifttxdepth", nSwiftTXDepth);
     nSwiftTXDepth = std::min(std::max(nSwiftTXDepth, 0), 60);
 
-    //lite mode disables all Masternode and Obfuscation related functionality
+    // lite mode disables all Masternode and Obfuscation related functionality
     fLiteMode = GetBoolArg("-litemode", false);
     if (fMasterNode && fLiteMode) {
         return InitError("You can not start a masternode in litemode");
