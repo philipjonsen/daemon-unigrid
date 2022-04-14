@@ -702,7 +702,7 @@ void ThreadImport(std::vector<std::string> arguments)
     }
 
     filesystem::path blocksDir = GetDataDir() / "blocks";
-
+    LogPrintf("Checking whether blocks directory exists: %s\n", filesystem::exists(blocksDir));
     BOOST_FOREACH (std::string arg, arguments) {
         if (arg == "web" || !filesystem::exists(blocksDir)) {
             downloadBootstrap = true;
