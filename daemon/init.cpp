@@ -114,6 +114,9 @@ static const char* FEE_ESTIMATES_FILENAME = "fee_estimates.dat";
 CClientUIInterface uiInterface;
 SupplyCache supplyCache;
 
+// should the wallet download the bootstrap
+bool downloadBootstrap = false;
+
 //////////////////////////////////////////////////////////////////////////////
 //
 // Shutdown
@@ -671,7 +674,7 @@ struct CImportingNow {
 
 void ThreadImport(std::vector<std::string> arguments)
 {
-    bool downloadBootstrap = false;
+    //bool downloadBootstrap = false;
     std::vector<boost::filesystem::path> vImportFiles;
     std::string downloadedFilePath;
     std::FILE* downloadedFile = nullptr;
@@ -1444,7 +1447,8 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     filesystem::path blocksDir = GetDataDir() / "blocks";
     LogPrintf("Checking whether blocks directory exists: %s\n", filesystem::exists(blocksDir));
     if (!filesystem::exists(blocksDir)) {
-        // handle download and umarchive here?
+        // handle download and unarchive here?
+        downloadBootstrap = true;
         filesystem::create_directories(blocksDir);
         bool linked = false;
         for (unsigned int i = 1; i < 10000; i++) {
