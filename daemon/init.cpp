@@ -1445,9 +1445,9 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     LogPrintf("Checking whether blocks directory exists: %s\n", filesystem::exists(blocksDir));
     if (!filesystem::exists(blocksDir)) {
         // handle download and umarchive here?
-        //filesystem::create_directories(blocksDir);
+        filesystem::create_directories(blocksDir);
         bool linked = false;
-        /*for (unsigned int i = 1; i < 10000; i++) {
+        for (unsigned int i = 1; i < 10000; i++) {
             filesystem::path source = GetDataDir() / strprintf("blk%04u.dat", i);
             if (!filesystem::exists(source)) break;
             filesystem::path dest = blocksDir / strprintf("blk%05u.dat", i - 1);
@@ -1460,44 +1460,6 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
                 // blocks will get re-downloaded from peers.
                 LogPrintf("Error hardlinking blk%04u.dat : %s\n", i, e.what());
                 break;
-            }
-        }*/
-        // Download bootstrap archive from the project web site
-        bool downloadBootstrap = false;
-        std::string downloadedFilePath;
-        std::FILE* downloadedFile = nullptr;
-        std::vector<boost::filesystem::path> vImportFiles;
-        if (downloadBootstrap) {
-            std::string basePath = (boost::filesystem::temp_directory_path() / boost::filesystem::unique_path()).string();
-
-            downloadedFilePath = basePath + ".xz";
-            // downloadedFilePath = basePath + ".bsa";
-            downloadedFile = std::fopen(downloadedFilePath.c_str(), "w+");
-
-            if (downloadedFile) {
-                // LogPrintf("Starting to download bootstrap \"%s\" to \"%s\"...\n", UNIGRIDCORE_BOOTSTRAP_LOCATION, downloadedFilePath);
-                LogPrintf("Starting to download bootstrap \"%s\" to \"%s\"...\n", UNIGRIDCORE_BLOCKSNCHAINS_LOCATION, downloadedFilePath);
-                Downloader downloader(UNIGRIDCORE_BLOCKSNCHAINS_LOCATION, downloadedFile, [](double percentage) -> void {
-                    bootstrappingProgress = percentage;
-                });
-
-                bootstrappingStatus = "downloading";
-                downloader.fetch();
-                std::rewind(downloadedFile);
-                BSArchive bsArchive(downloadedFile);
-                LogPrintf("Bootstrap download completed\n");
-
-                // If the file is not empty and hash can be verified, we can safely use it!
-                if (!std::feof(downloadedFile) && bsArchive.verifyHash()) {
-                    vImportFiles.push_back(downloadedFilePath);
-                } else {
-                    // tell the GUI we're now syncing otherwise it wont display information about the sync progress
-                    bootstrappingProgress = -1;
-                    bootstrappingStatus = "syncing";
-                    LogPrintf("Downloaded bootstrap archive appears to be empty or corrupted - will not be used\n");
-                }
-
-                std::fclose(downloadedFile);
             }
         }
         if (linked) {
