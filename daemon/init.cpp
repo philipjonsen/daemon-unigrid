@@ -701,8 +701,6 @@ void ThreadImport(std::vector<std::string> arguments)
         InitBlockIndex();
     }
 
-    filesystem::path blocksDir = GetDataDir() / "blocks";
-    LogPrintf("Checking whether blocks directory exists: %s\n", filesystem::exists(blocksDir));
     BOOST_FOREACH (std::string arg, arguments) {
         if (arg == "web" || !filesystem::exists(blocksDir)) {
             downloadBootstrap = true;
@@ -1444,7 +1442,9 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 
     // Upgrading to 0.8; hard-link the old blknnnn.dat files into /blocks/
     filesystem::path blocksDir = GetDataDir() / "blocks";
+    LogPrintf("Checking whether blocks directory exists: %s\n", filesystem::exists(blocksDir));
     if (!filesystem::exists(blocksDir)) {
+        // handle download and umarchive here?
         filesystem::create_directories(blocksDir);
         bool linked = false;
         for (unsigned int i = 1; i < 10000; i++) {
