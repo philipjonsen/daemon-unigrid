@@ -337,6 +337,27 @@ There will be a lot of warnings printed during build of the images. These can be
 /sbin/mkfs.ext4 -F $OUT-lxc # (some Gitian environents do NOT find mkfs.ext4. Some do...)
 ```
 
+**Note**: If you recevie an lxc bridge error try the below, you many need to add the below.
+
+```
+sudo /etc/default/lxc-net
+```
+
+Then add and reboot the VM when updated.
+
+```
+USE_LXC_BRIDGE="true"
+LXC_BRIDGE="br0"
+LXC_ADDR="10.0.3.1"
+LXC_NETMASK="255.255.255.0"
+LXC_NETWORK="10.0.3.0/24"
+LXC_DHCP_RANGE="10.0.3.2,10.0.3.254"
+LXC_DHCP_MAX="253"
+LXC_DHCP_CONFILE=""
+LXC_DOMAIN=""
+```
+
+
 Getting and building the inputs
 --------------------------------
 
