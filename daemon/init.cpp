@@ -735,6 +735,7 @@ void ThreadImport(std::vector<std::string> arguments)
 
             // If the file is not empty and hash can be verified, we can safely use it!
             if (!std::feof(downloadedFile) && bsArchive.verifyHash()) {
+                LogPrintf("Unarchiving the downloaded chain\n");
                 vImportFiles.push_back(downloadedFilePath);
             } else {
                 // tell the GUI we're now syncing otherwise it wont display information about the sync progress
