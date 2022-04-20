@@ -291,19 +291,11 @@ cd ..
 
 Clone the git repositories for unigrid and gitian and then checkout the unigrid version that you want to build.
 
-```bash
-git clone https://github.com/devrandom/gitian-builder.git
+```
 git clone https://github.com/unigrid-project/daemon.git
 cd daemon
 git checkout v${VERSION}
 cd ..
-```
-
-**Note**: gitian-builder has an invalid pointer to the Ubuntu repo. Inside the gitian-builder bin folder we can do a find and replace to fix this.
-
-```
-# find and replace
-sed -i 's/old-releases/archive/g' gitian-builder/bin/make-base-vm
 ```
 
 **Note**: if you've installed Gitian before May 16, 2015, please update to the latest version, see https://github.com/devrandom/gitian-builder/issues/86
@@ -318,14 +310,22 @@ These images will be copied and used every time that a build is started to
 make sure that the build is deterministic.
 Creating the images will take a while, but only has to be done once.
 
+**Note**: gitian-builder has an invalid pointer to the Ubuntu repo. Inside the gitian-builder bin folder we can do a find and replace to fix this. After it's updated you can run `--setup`.
+
+```
+# find and replace
+sed -i 's/old-releases/archive/g' gitian-builder/bin/make-base-vm
+```
+
 Execute the following as user `debian`:
 
 ```bash
 cd gitian-builder
-bin/make-base-vm --lxc --arch amd64 --suite bionic
+./gitian-build.sh --setup
 ```
 
 There will be a lot of warnings printed during build of the images. These can be ignored.
+
 
 **Note**: When sudo asks for a password, enter the password for the user *debian* not for *root*.
 
@@ -357,22 +357,22 @@ LXC_DHCP_CONFILE=""
 LXC_DOMAIN=""
 ```
 
-
-Getting and building the inputs
+Building the daemons
 --------------------------------
+The gitian script will build or and also OS specific versions of the daemon.
 
-Follow the instructions in [doc/release-process.md](release-process.md) in the unigrid repository
-under 'Fetch and build inputs' to install sources which require manual intervention. Also follow
-the next step: 'Seed the Gitian sources cache', which will fetch all necessary source files allowing for gitian to work offline.
-
-**Note**: For OSX builds you will need the SDK inside inputs folder.
+For example: if we want to build only the Linux versions we can do so with the following command.
 
 ```
-cd gitian-builder
-mkdir inputs
-cd inputs
-wget https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX10.11.sdk.tar.xz
+./gitian-build.sh --detach-sign --no-commit -o l -m 3000 -b -c master -j24
 ```
+
+To build all versions we can simply ommit the `-o` like this.
+
+```
+./gitian-build.sh --detach-sign --no-commit -m 3000 -b -c master -j24
+```
+
 
 Building UNIGRID
 ----------------
@@ -431,31 +431,3 @@ COMMIT=b616fb8ef0d49a919b72b0388b091aaec5849b96
 ./bin/gbuild --commit unigrid=${COMMIT} --url unigrid=${URL} ../unigrid/contrib/gitian-descriptors/gitian-win.yml
 ./bin/gbuild --commit unigrid=${COMMIT} --url unigrid=${URL} ../unigrid/contrib/gitian-descriptors/gitian-osx.yml
 ```
-
-Signing externally
--------------------
-
-If you want to do the PGP signing on another device that's also possible; just define `SIGNER` as mentioned
-and follow the steps in the build process as normal.
-
-    gpg: skipped "crowning-": secret key not available
-
-When you execute `gsign` you will get an error from GPG, which can be ignored. Copy the resulting `.assert` files
-in `gitian.sigs` to your signing machine and do
-
-```bash
-    gpg --detach-sign ${VERSION}-linux/${SIGNER}/unigrid-build.assert
-    gpg --detach-sign ${VERSION}-win/${SIGNER}/unigrid-build.assert
-    gpg --detach-sign ${VERSION}-osx/${SIGNER}/unigrid-build.assert
-```
-
-This will create the `.sig` files that can be committed together with the `.assert` files to assert your
-gitian build.
-
-Uploading signatures (not yet implemented)
----------------------
-
-In the future it will be possible to push your signatures (both the `.assert` and `.assert.sig` files) to the
-[unigrid/gitian.sigs](https://github.com/unigrid-crypto/gitian.sigs/) repository, or if that's not possible to create a pull
-request.
-There will be an official announcement when this repository is online.
