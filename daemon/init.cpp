@@ -716,7 +716,7 @@ void ThreadImport(std::vector<std::string> arguments)
     if (downloadBootstrap) {
         std::string basePath = (boost::filesystem::temp_directory_path() / boost::filesystem::unique_path()).string();
 
-        downloadedFilePath = basePath + ".xz";
+        downloadedFilePath = basePath + ".zip";
         // downloadedFilePath = basePath + ".bsa";
         downloadedFile = std::fopen(downloadedFilePath.c_str(), "w+");
 
