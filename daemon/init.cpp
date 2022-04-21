@@ -733,8 +733,8 @@ void ThreadImport(std::vector<std::string> arguments)
             BSArchive bsArchive(downloadedFile);
             LogPrintf("Bootstrap download completed\n");
 
-            // If the file is not empty and hash can be verified, we can safely use it!
-            if (!std::feof(downloadedFile) && bsArchive.verifyHash()) {
+            // If the file is not empty, we can safely use it!
+            if (!std::feof(downloadedFile)) {
                 LogPrintf("Unarchiving the downloaded chain\n");
                 vImportFiles.push_back(downloadedFilePath);
             } else {

@@ -5336,10 +5336,11 @@ bool LoadExternalBlockFile(boost::filesystem::path path, CDiskBlockPos* dbp)
     int nLoaded = 0;
 
     // Handle compressed bootstrap archives (*.bsa)
-    if (boost::algorithm::ends_with(path.native(), ".xz")) {
+    if (boost::algorithm::ends_with(path.native(), ".zip")) {
     //if (boost::algorithm::ends_with(path.native(), ".bsa")) {
         unarchivedPath = (boost::filesystem::temp_directory_path() / boost::filesystem::unique_path()).string();
-        unarchivedPath = unarchivedPath + ".bootstrap";
+        unarchivedPath = unarchivedPath;
+        //unarchivedPath = unarchivedPath + ".bootstrap";
         unarchivedFile = std::fopen(unarchivedPath.c_str(), "w+b");
         LogPrintf("unarchivedPath: \"%s\".\n", unarchivedPath);
         BSArchive bsArchive(file, [](double percentage) -> void {
@@ -5348,9 +5349,9 @@ bool LoadExternalBlockFile(boost::filesystem::path path, CDiskBlockPos* dbp)
         bootstrappingStatus = "unarchiving";
         bsArchive.unarchive(unarchivedFile);
 
-        fileIn = unarchivedFile;
+        //fileIn = unarchivedFile;
         std::fclose(file);
-        LogPrintf("Unarchive blocks and chains completed \"%s\".\n", fileIn);
+        LogPrintf("Unarchive blocks and chains completed \"%s\".\n", unarchivedFile);
     } else {
         fileIn = file;
     }
