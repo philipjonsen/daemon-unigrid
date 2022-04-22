@@ -284,10 +284,10 @@ BSArchive::untar(std::FILE *path)
 			printf("End of %s\n", path);
 			return;
 		}
-		if (!verify_checksum(buff)) {
+		/*if (!verify_checksum(buff)) {
 			fprintf(stderr, "Checksum failure\n");
 			return;
-		}
+		}*/
 		filesize = parseoct(buff + 124, 12);
 		switch (buff[156]) {
 		case '1':
