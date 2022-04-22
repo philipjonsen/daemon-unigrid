@@ -5336,7 +5336,7 @@ bool LoadExternalBlockFile(boost::filesystem::path path, CDiskBlockPos* dbp)
     int nLoaded = 0;
 
     // Handle compressed bootstrap archives (*.bsa)
-    if (boost::algorithm::ends_with(path.native(), ".zip")) {
+    if (boost::algorithm::ends_with(path.native(), ".tar.xz")) {
     //if (boost::algorithm::ends_with(path.native(), ".bsa")) {
         unarchivedPath = (boost::filesystem::temp_directory_path() / boost::filesystem::unique_path()).string();
         unarchivedPath = unarchivedPath;
