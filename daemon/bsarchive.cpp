@@ -264,7 +264,7 @@ verify_checksum(const char *p)
 
 /* Extract a tar archive. */
 void
-BSArchive::untar(std::FILE *a, std::string *path)
+BSArchive::untar(std::FILE *path)
 {
 	char buff[512];
 	FILE *f = NULL;
@@ -273,7 +273,7 @@ BSArchive::untar(std::FILE *a, std::string *path)
 
 	printf("Extracting from %s\n", path);
 	for (;;) {
-		bytes_read = fread(buff, 1, 512, a);
+		bytes_read = fread(buff, 1, 512, file);
 		if (bytes_read < 512) {
 			fprintf(stderr,
 			    "Short read on %s: expected 512, got %d\n",
@@ -316,7 +316,7 @@ BSArchive::untar(std::FILE *a, std::string *path)
 			break;
 		}
 		while (filesize > 0) {
-			bytes_read = fread(buff, 1, 512, a);
+			bytes_read = fread(buff, 1, 512, file);
 			if (bytes_read < 512) {
 				fprintf(stderr,
 				    "Short read on %s: Expected 512, got %d\n",
