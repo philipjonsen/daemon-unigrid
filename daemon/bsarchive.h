@@ -19,4 +19,5 @@ public:
 
     bool verifyHash();
     int unarchive(std::FILE *destination);
+    int untar(FILE *a, const char *path);
 };

@@ -263,8 +263,8 @@ verify_checksum(const char *p)
 }
 
 /* Extract a tar archive. */
-static void
-untar(FILE *a, const char *path)
+//static void
+int BSArchive::untar(FILE *a, const char *path)
 {
 	char buff[512];
 	FILE *f = NULL;

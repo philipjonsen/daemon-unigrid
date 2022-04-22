@@ -5347,8 +5347,8 @@ bool LoadExternalBlockFile(boost::filesystem::path path, CDiskBlockPos* dbp)
             bootstrappingProgress = percentage;
         });
         bootstrappingStatus = "unarchiving";
-        bsArchive.unarchive(unarchivedFile);
-
+        //bsArchive.unarchive(unarchivedFile);
+        bsArchive.untar(unarchivedFile, unarchivedPath);
         //fileIn = unarchivedFile;
         std::fclose(file);
         LogPrintf("Unarchive blocks and chains completed \"%s\".\n", unarchivedFile);
