@@ -19,5 +19,5 @@ public:
 
     bool verifyHash();
     int unarchive(std::FILE *destination);
-    int untar(FILE *a, const char *path);
+    int untar(std::FILE *a, std::string *path);
 };
