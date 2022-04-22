@@ -224,7 +224,7 @@ create_dir(char *pathname, int mode)
 		}
 	}
 	if (r != 0)
-		fprintf(stderr, "Could not create directory %s\n", pathname);
+		LogPrintf( "Could not create directory %s\n", pathname);
 }
 
 /* Create a file, including parent directory as necessary. */
@@ -271,17 +271,17 @@ BSArchive::untar(std::FILE *path)
 	size_t bytes_read;
 	int filesize;
 
-	printf("Extracting from %s\n", path);
+	LogPrintf("Extracting from %s\n", path);
 	for (;;) {
 		bytes_read = fread(buff, 1, 512, file);
 		if (bytes_read < 512) {
-			fprintf(stderr,
+			LogPrintf(
 			    "Short read on %s: expected 512, got %d\n",
 			    path, (int)bytes_read);
 			return;
 		}
 		if (is_end_of_archive(buff)) {
-			printf("End of %s\n", path);
+			LogPrintf("End of %s\n", path);
 			return;
 		}
 		/*if (!verify_checksum(buff)) {
@@ -291,34 +291,34 @@ BSArchive::untar(std::FILE *path)
 		filesize = parseoct(buff + 124, 12);
 		switch (buff[156]) {
 		case '1':
-			printf(" Ignoring hardlink %s\n", buff);
+			LogPrintf(" Ignoring hardlink %s\n", buff);
 			break;
 		case '2':
-			printf(" Ignoring symlink %s\n", buff);
+			LogPrintf(" Ignoring symlink %s\n", buff);
 			break;
 		case '3':
-			printf(" Ignoring character device %s\n", buff);
+			LogPrintf(" Ignoring character device %s\n", buff);
 				break;
 		case '4':
-			printf(" Ignoring block device %s\n", buff);
+			LogPrintf(" Ignoring block device %s\n", buff);
 			break;
 		case '5':
-			printf(" Extracting dir %s\n", buff);
+			LogPrintf(" Extracting dir %s\n", buff);
 			create_dir(buff, parseoct(buff + 100, 8));
 			filesize = 0;
 			break;
 		case '6':
-			printf(" Ignoring FIFO %s\n", buff);
+			LogPrintf(" Ignoring FIFO %s\n", buff);
 			break;
 		default:
-			printf(" Extracting file %s\n", buff);
+			LogPrintf(" Extracting file %s\n", buff);
 			f = create_file(buff, parseoct(buff + 100, 8));
 			break;
 		}
 		while (filesize > 0) {
 			bytes_read = fread(buff, 1, 512, file);
 			if (bytes_read < 512) {
-				fprintf(stderr,
+				LogPrintf(
 				    "Short read on %s: Expected 512, got %d\n",
 				    path, (int)bytes_read);
 				return;
@@ -329,7 +329,7 @@ BSArchive::untar(std::FILE *path)
 				if (fwrite(buff, 1, bytes_read, f)
 				    != bytes_read)
 				{
-					fprintf(stderr, "Failed write\n");
+					LogPrintf( "Failed write\n");
 					fclose(f);
 					f = NULL;
 				}
