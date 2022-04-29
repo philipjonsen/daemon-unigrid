@@ -3615,12 +3615,12 @@ set<set<CTxDestination> > CWallet::GetAddressGroupings()
     BOOST_FOREACH (PAIRTYPE(uint256, CWalletTx) walletEntry, mapWallet) {
         CWalletTx* pcoin = &walletEntry.second;
 
-        if (pcoin->vin.size() > 0) {
+        /*if (pcoin->vin.size() > 0) {
             bool any_mine = false;
             // group all input addresses with each other
             BOOST_FOREACH (CTxIn txin, pcoin->vin) {
                 CTxDestination address;
-                if (!IsMine(txin)) /* If this input isn't mine, ignore it */
+                if (!IsMine(txin)) 
                     continue;
                 if (!ExtractDestination(mapWallet[txin.prevout.hash].vout[txin.prevout.n].scriptPubKey, address))
                     continue;
@@ -3642,7 +3642,7 @@ set<set<CTxDestination> > CWallet::GetAddressGroupings()
                 groupings.insert(grouping);
                 grouping.clear();
             }
-        }
+        }*/
 
         // group lone addrs by themselves
         for (unsigned int i = 0; i < pcoin->vout.size(); i++)
