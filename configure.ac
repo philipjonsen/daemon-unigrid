@@ -1060,14 +1060,6 @@ AC_CHECK_DECLS([EVP_MD_CTX_new],,,[AC_INCLUDES_DEFAULT
 ])
 CXXFLAGS="${save_CXXFLAGS}"
 
-AC_CHECK_LIB([crypto],[RAND_egd],[],[
-  AC_ARG_WITH([unsupported-ssl],
-    [AS_HELP_STRING([--with-unsupported-ssl],[Build with system SSL (default is no; DANGEROUS; NOT SUPPORTED; You should use OpenSSL 1.0)])],
-    [AC_MSG_WARN([Detected unsupported SSL version: This is NOT supported, and may break consensus compatibility!])],
-    [AC_MSG_ERROR([Detected unsupported SSL version: This is NOT supported, and may break consensus compatibility!])]
-  )
-])
-
 dnl univalue check
 
 need_bundled_univalue=yes
