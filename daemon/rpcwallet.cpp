@@ -496,6 +496,41 @@ UniValue listaddressgroupings(const UniValue& params, bool fHelp)
     return jsonGroupings;
 }
 
+#include <stdio.h>
+UniValue listaddressbalances(const UniValue& params, bool fHelp)
+{
+    if (fHelp)
+        throw runtime_error(
+            "listaddressbalances\n"
+            "\nLists all addresses in this wallet, including their balance\n"
+
+            "\nResult:\n"
+            "[\n"
+            "  {\n"
+            "    \"address\",            (string) The unigrid address\n"
+            "    \"amount\"              (numeric) The amount in UNIGRID\n"
+            "  }\n"
+            "  ,...\n"
+            "]\n"
+
+            "\nExamples:\n" +
+            HelpExampleCli("listaddressbalances", "") + HelpExampleRpc("listaddressbalances", ""));
+
+    LOCK2(cs_main, pwalletMain->cs_wallet);
+    UniValue json(UniValue::VARR);
+
+    BOOST_FOREACH (const PAIRTYPE(CBitcoinAddress, CAddressBookData) & item, pwalletMain->mapAddressBook) {
+        UniValue obj(UniValue::VOBJ);
+
+	obj.push_back(Pair("address", item.first.ToString()));
+        //obj.push_back(Pair("amount", ValueFromAmount(item.second)));
+
+        json.push_back(obj);
+    }
+
+    return json;
+}
+
 UniValue signmessage(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 2)
