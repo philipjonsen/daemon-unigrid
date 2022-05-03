@@ -2,7 +2,7 @@
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
 // Copyright (c) 2015-2018 The PIVX developers
-// Copyright (c) 2018-2019 The UNIGRID organization
+// Copyright (c) 2018-2022 The UNIGRID organization
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -496,7 +496,21 @@ UniValue listaddressgroupings(const UniValue& params, bool fHelp)
     return jsonGroupings;
 }
 
-#include <stdio.h>
+struct tallyitem {
+    CAmount nAmount;
+    int nConf;
+    int nBCConf;
+    vector<uint256> txids;
+    bool fIsWatchonly;
+    tallyitem()
+    {
+        nAmount = 0;
+        nConf = std::numeric_limits<int>::max();
+        nBCConf = std::numeric_limits<int>::max();
+        fIsWatchonly = false;
+    }
+};
+
 UniValue listaddressbalances(const UniValue& params, bool fHelp)
 {
     if (fHelp)
@@ -517,14 +531,23 @@ UniValue listaddressbalances(const UniValue& params, bool fHelp)
             HelpExampleCli("listaddressbalances", "") + HelpExampleRpc("listaddressbalances", ""));
 
     LOCK2(cs_main, pwalletMain->cs_wallet);
+    map<CBitcoinAddress, tallyitem> tally;
+
+    /* First, we fetch all the addresses in the wallet and set an empty balance */
+    BOOST_FOREACH (const PAIRTYPE(CBitcoinAddress, CAddressBookData) &item, pwalletMain->mapAddressBook) {
+        tally.insert(std::pair<CBitcoinAddress, tallyitem>(item.first, tallyitem()));
+    }
+
+    for (auto i : pwalletMain->GetAddressBalances()) {
+        tally[i.first].nAmount = i.second;
+    }
+
     UniValue json(UniValue::VARR);
 
-    BOOST_FOREACH (const PAIRTYPE(CBitcoinAddress, CAddressBookData) & item, pwalletMain->mapAddressBook) {
+    for (auto i : tally) {
         UniValue obj(UniValue::VOBJ);
-
-	obj.push_back(Pair("address", item.first.ToString()));
-        //obj.push_back(Pair("amount", ValueFromAmount(item.second)));
-
+        obj.push_back(Pair("address", i.first.ToString()));
+        obj.push_back(Pair("amount", ValueFromAmount(i.second.nAmount)));
         json.push_back(obj);
     }
 
@@ -1078,22 +1101,6 @@ UniValue addmultisigaddress(const UniValue& params, bool fHelp)
     pwalletMain->SetAddressBook(innerID, strAccount, "send");
     return CBitcoinAddress(innerID).ToString();
 }
-
-
-struct tallyitem {
-    CAmount nAmount;
-    int nConf;
-    int nBCConf;
-    vector<uint256> txids;
-    bool fIsWatchonly;
-    tallyitem()
-    {
-        nAmount = 0;
-        nConf = std::numeric_limits<int>::max();
-        nBCConf = std::numeric_limits<int>::max();
-        fIsWatchonly = false;
-    }
-};
 
 UniValue ListReceived(const UniValue& params, bool fByAccounts)
 {
