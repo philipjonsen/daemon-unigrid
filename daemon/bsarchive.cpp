@@ -1,4 +1,5 @@
 // Copyright (c) 2017-2019 The Swipp developers
+// Copyright (c) 2019-2022 The UNIGRID organization
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING.daemon or http://www.opensource.org/licenses/mit-license.php.
 
@@ -13,19 +14,64 @@
 #include "xz/xz.h"
 #include "util.h"
 
-/* These are all highly standard and portable headers. */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-/* This is for mkdir(); this may need to be changed for some platforms. */
-#include <sys/stat.h>  /* For mkdir() */
+#include <sys/stat.h>
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
 #include <windows.h>
 #endif
 
 #define BUFFER_SIZE 1024 * 1024 /* 1MB */
+
+int BSArchive::tarParseOct(const char *p, size_t n)
+{
+    int i = 0;
+
+    while ((*p < '0' || *p > '7') && n > 0) {
+        ++p;
+        --n;
+    }
+
+    while (*p >= '0' && *p <= '7' && n > 0) {
+        i *= 8;
+        i += *p - '0';
+
+        ++p;
+        --n;
+    }
+
+    return (i);
+}
+
+bool BSArchive::tarIsEndOfArchive(const char *p)
+{
+    int n;
+
+    for (n = 511; n >= 0; --n)
+        if (p[n] != '\0')
+            return false;
+
+    return true;
+}
+
+int BSArchive::tarVerifyChecksum(const char *p)
+{
+    int n, u = 0;
+
+    for (n = 0; n < 512; ++n) {
+        if (n < 148 || n > 155) {
+            /* Standard tar checksum adds unsigned bytes. */
+            u += ((unsigned char *) p)[n];
+        } else {
+            u += 0x20;
+        }
+    }
+
+    return u == tarParseOct(p + 148, 8);
+}
 
 BSArchive::BSArchive(std::FILE *file, std::function<void(double percentage)> progress) : file(file), progress(progress)
 {
@@ -51,6 +97,7 @@ bool BSArchive::verifyHash()
         if (std::ferror(file)) {
             LogPrintf("Failed to read hash from bootstrap archive");
             delete[] computedHash;
+
             return false;
         }
     }
@@ -150,6 +197,7 @@ int BSArchive::unarchive(std::FILE *destination)
                 xz_dec_end(s);
                 std::fflush(destination);
                 progress(100.0);
+
                 return 0;
             }
 
@@ -161,186 +209,142 @@ int BSArchive::unarchive(std::FILE *destination)
     return -1;
 }
 
-/* Parse an octal number, ignoring leading and trailing nonsense. */
-static int
-parseoct(const char *p, size_t n)
+void BSArchive::createDir(char *pathname, int mode)
 {
-	int i = 0;
+    char *p;
+    int r;
 
-	while ((*p < '0' || *p > '7') && n > 0) {
-		++p;
-		--n;
-	}
-	while (*p >= '0' && *p <= '7' && n > 0) {
-		i *= 8;
-		i += *p - '0';
-		++p;
-		--n;
-	}
-	return (i);
-}
-
-/* Returns true if this is 512 zero bytes. */
-static int
-is_end_of_archive(const char *p)
-{
-	int n;
-	for (n = 511; n >= 0; --n)
-		if (p[n] != '\0')
-			return (0);
-	return (1);
-}
-
-/* Create a directory, including parent directories as necessary. */
-static void
-create_dir(char *pathname, int mode)
-{
-	char *p;
-	int r;
-
-	/* Strip trailing '/' */
-	if (pathname[strlen(pathname) - 1] == '/')
-		pathname[strlen(pathname) - 1] = '\0';
+    /* Strip trailing '/' */
+    if (pathname[strlen(pathname) - 1] == '/')
+        pathname[strlen(pathname) - 1] = '\0';
 
 	/* Try creating the directory. */
-#if defined(_WIN32) && !defined(__CYGWIN__)
-	r = _mkdir(pathname);
-#else
-	r = mkdir(pathname, mode);
-#endif
+    #if defined(_WIN32) && !defined(__CYGWIN__)
+    r = _mkdir(pathname);
+    #else
+    r = mkdir(pathname, mode);
+    #endif
 
-	if (r != 0) {
-		/* On failure, try creating parent directory. */
-		p = strrchr(pathname, '/');
-		if (p != NULL) {
-			*p = '\0';
-			create_dir(pathname, 0755);
-			*p = '/';
-#if defined(_WIN32) && !defined(__CYGWIN__)
-			r = _mkdir(pathname);
-#else
-			r = mkdir(pathname, mode);
-#endif
-		}
-	}
-	if (r != 0)
-		LogPrintf( "Could not create directory %s\n", pathname);
+    if (r != 0) {
+        /* On failure, try creating parent directory. */
+        p = strrchr(pathname, '/');
+        if (p != NULL) {
+            *p = '\0';
+            createDir(pathname, 0755);
+            *p = '/';
+
+            #if defined(_WIN32) && !defined(__CYGWIN__)
+            r = _mkdir(pathname);
+            #else
+            r = mkdir(pathname, mode);
+            #endif
+        }
+    }
+
+    if (r != 0)
+        LogPrintf( "Could not create directory %s\n", pathname);
 }
 
-/* Create a file, including parent directory as necessary. */
-static FILE *
-create_file(char *pathname, int mode)
+FILE *BSArchive::createFile(char *pathname, int mode)
 {
 	FILE *f;
 	f = fopen(pathname, "wb+");
+
 	if (f == NULL) {
 		/* Try creating parent dir and then creating file. */
 		char *p = strrchr(pathname, '/');
+
 		if (p != NULL) {
 			*p = '\0';
-			create_dir(pathname, 0755);
+			createDir(pathname, 0755);
+
 			*p = '/';
 			f = fopen(pathname, "wb+");
 		}
 	}
+
 	return (f);
 }
 
-/* Verify the tar checksum. */
-static int
-verify_checksum(const char *p)
+void BSArchive::untar(std::FILE *path)
 {
-	int n, u = 0;
-	for (n = 0; n < 512; ++n) {
-		if (n < 148 || n > 155)
-			/* Standard tar checksum adds unsigned bytes. */
-			u += ((unsigned char *)p)[n];
-		else
-			u += 0x20;
+    char buff[512];
+    FILE *f = NULL;
+    size_t bytes_read;
+    int filesize;
 
-	}
-	return (u == parseoct(p + 148, 8));
-}
+    LogPrintf("Extracting tar from %s\n", path);
 
-/* Extract a tar archive. */
-void
-BSArchive::untar(std::FILE *path)
-{
-	char buff[512];
-	FILE *f = NULL;
-	size_t bytes_read;
-	int filesize;
+    while(true) {
+        bytes_read = fread(buff, 1, 512, file);
 
-	LogPrintf("Extracting from %s\n", path);
-	for (;;) {
-		bytes_read = fread(buff, 1, 512, file);
-		if (bytes_read < 512) {
-			LogPrintf(
-			    "Short read on %s: expected 512, got %d\n",
-			    path, (int)bytes_read);
-			return;
-		}
-		if (is_end_of_archive(buff)) {
-			LogPrintf("End of %s\n", path);
-			return;
-		}
-		if (!verify_checksum(buff)) {
-			fprintf(stderr, "Checksum failure\n");
-			return;
-		}
-		filesize = parseoct(buff + 124, 12);
-		switch (buff[156]) {
-		case '1':
-			LogPrintf(" Ignoring hardlink %s\n", buff);
-			break;
-		case '2':
-			LogPrintf(" Ignoring symlink %s\n", buff);
-			break;
-		case '3':
-			LogPrintf(" Ignoring character device %s\n", buff);
-				break;
-		case '4':
-			LogPrintf(" Ignoring block device %s\n", buff);
-			break;
-		case '5':
-			LogPrintf(" Extracting dir %s\n", buff);
-			create_dir(buff, parseoct(buff + 100, 8));
-			filesize = 0;
-			break;
-		case '6':
-			LogPrintf(" Ignoring FIFO %s\n", buff);
-			break;
-		default:
-			LogPrintf(" Extracting file %s\n", buff);
-			f = create_file(buff, parseoct(buff + 100, 8));
-			break;
-		}
-		while (filesize > 0) {
-			bytes_read = fread(buff, 1, 512, file);
-			if (bytes_read < 512) {
-				LogPrintf(
-				    "Short read on %s: Expected 512, got %d\n",
-				    path, (int)bytes_read);
-				return;
+        if (bytes_read < 512) {
+            LogPrintf("Short read on %s: expected 512, got %d\n",
+			          path, (int)bytes_read);
+            return;
+        }
+
+        if (tarIsEndOfArchive(buff)) {
+            LogPrintf("End of %s\n", path);
+            return;
+        }
+
+        if (!tarVerifyChecksum(buff)) {
+            fprintf(stderr, "Checksum failure\n");
+            return;
+        }
+
+        filesize = tarParseOct(buff + 124, 12);
+
+        switch (buff[156]) {
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+                break;
+
+            case '5':
+                LogPrintf(" Extracting dir %s\n", buff);
+                createDir(buff, tarParseOct(buff + 100, 8));
+                filesize = 0;
+                break;
+
+            case '6':
+                LogPrintf(" Ignoring FIFO %s\n", buff);
+                break;
+
+            default:
+                LogPrintf(" Extracting file %s\n", buff);
+                f = createFile(buff, tarParseOct(buff + 100, 8));
+                break;
+        }
+
+        while (filesize > 0) {
+            bytes_read = fread(buff, 1, 512, file);
+
+            if (bytes_read < 512) {
+                LogPrintf("Short read on %s: Expected 512, got %d\n",
+                          path, (int) bytes_read);
+                return;
 			}
-			if (filesize < 512)
+
+            if (filesize < 512)
 				bytes_read = filesize;
-			if (f != NULL) {
-				if (fwrite(buff, 1, bytes_read, f)
-				    != bytes_read)
-				{
-					LogPrintf( "Failed write\n");
-					fclose(f);
-					f = NULL;
-				}
-			}
-			filesize -= bytes_read;
-		}
-		if (f != NULL) {
-			fclose(f);
-			f = NULL;
-		}
-	}
+
+            if (f != NULL) {
+                if (fwrite(buff, 1, bytes_read, f) != bytes_read) {
+                    LogPrintf( "Failed write\n");
+                    fclose(f);
+                    f = NULL;
+                }
+            }
+
+            filesize -= bytes_read;
+        }
+
+        if (f != NULL) {
+            fclose(f);
+            f = NULL;
+        }
+    }
 }
-
-
