@@ -1,7 +1,7 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2015-2018 The PIVX developers
-// Copyright (c) 2018-2019 The UNIGRID organization
+// Copyright (c) 2018-2022 The UNIGRID organization
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -16,9 +16,7 @@
 #include <map>
 #include <stdint.h>
 #include <string>
-
 #include <boost/function.hpp>
-
 #include <univalue.h>
 
 class CRPCCommand;
@@ -45,15 +43,12 @@ public:
     void parse(const UniValue& valRequest);
 };
 
-/** Query whether RPC is running */
 bool IsRPCRunning();
 
-/**
- * Set the RPC warmup status.  When this is done, all RPC calls will error out
- * immediately with RPC_IN_WARMUP.
- */
+/* Set the RPC warmup status.  When this is done, all RPC calls will error out immediately with RPC_IN_WARMUP. */
 void SetRPCWarmupStatus(const std::string& newStatus);
-/* Mark warmup as done.  RPC calls will be processed from now on.  */
+
+/* RPC calls will be processed after a call to this */
 void SetRPCWarmupFinished();
 
 /* returns the current warmup state.  */
@@ -72,7 +67,7 @@ void RPCTypeCheck(const UniValue& params,
  * Use like: RPCTypeCheckObj(object, boost::assign::map_list_of("name", str_type)("value", int_type));
  */
 void RPCTypeCheckObj(const UniValue& o,
-                  const std::map<std::string, UniValue::VType>& typesExpected, bool fAllowNull=false);
+                     const std::map<std::string, UniValue::VType>& typesExpected, bool fAllowNull=false);
 
 /** Opaque base class for timers returned by NewTimerFunc.
  * This provides no methods at the moment, but makes sure that delete
@@ -84,15 +79,12 @@ public:
     virtual ~RPCTimerBase() {}
 };
 
-/**
-* RPC timer "driver".
- */
 class RPCTimerInterface
 {
 public:
     virtual ~RPCTimerInterface() {}
-    /** Implementation name */
     virtual const char *Name() = 0;
+
     /** Factory function for timers.
      * RPC will call the function to create a timer that will call func in *millis* milliseconds.
      * @note As the RPC mechanism is backend-neutral, it can use different implementations of timers.
@@ -102,9 +94,7 @@ public:
     virtual RPCTimerBase* NewTimer(boost::function<void(void)>& func, int64_t millis) = 0;
 };
 
-/** Register factory function for timers */
 void RPCRegisterTimerInterface(RPCTimerInterface *iface);
-/** Unregister factory function for timers */
 void RPCUnregisterTimerInterface(RPCTimerInterface *iface);
 
 /**
@@ -126,9 +116,6 @@ public:
     bool reqWallet;
 };
 
-/**
- * UNIGRID RPC command dispatcher.
- */
 class CRPCTable
 {
 private:
@@ -138,20 +125,7 @@ public:
     CRPCTable();
     const CRPCCommand* operator[](const std::string& name) const;
     std::string help(std::string name) const;
-
-    /**
-     * Execute a method.
-     * @param method   Method to execute
-     * @param params   UniValue Array of arguments (JSON objects)
-     * @returns Result of the call.
-     * @throws an exception (UniValue) when an error happens.
-     */
     UniValue execute(const std::string &method, const UniValue &params) const;
-
-    /**
-    * Returns a list of registered commands
-    * @returns List of registered commands.
-    */
     std::vector<std::string> listCommands() const;
 };
 
@@ -326,6 +300,7 @@ extern UniValue mnfinalbudget(const UniValue& params, bool fHelp);
 extern UniValue checkbudgets(const UniValue& params, bool fHelp);
 
 extern UniValue getinfo(const UniValue& params, bool fHelp); // in rpcmisc.cpp
+extern UniValue getbootstrappinginfo(const UniValue& params, bool fHelp);
 extern UniValue getfrontendinfo(const UniValue& params, bool fHelp);
 extern UniValue mnsync(const UniValue& params, bool fHelp);
 extern UniValue spork(const UniValue& params, bool fHelp);
