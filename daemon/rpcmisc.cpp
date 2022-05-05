@@ -18,6 +18,7 @@
 #include "spork.h"
 #include "timedata.h"
 #include "util.h"
+
 #ifdef ENABLE_WALLET
 #include "wallet.h"
 #include "walletdb.h"
@@ -90,9 +91,11 @@ UniValue getinfo(const UniValue& params, bool fHelp)
 
     UniValue bootstrapping(UniValue::VOBJ);
     UniValue obj(UniValue::VOBJ);
+
     obj.push_back(Pair("version", CLIENT_VERSION));
     obj.push_back(Pair("latest-version", GetLatestRelease()));
     obj.push_back(Pair("protocolversion", PROTOCOL_VERSION));
+
 #ifdef ENABLE_WALLET
     if (pwalletMain) {
         CAmount balance = pwalletMain->GetBalance();
@@ -108,6 +111,7 @@ UniValue getinfo(const UniValue& params, bool fHelp)
 
     bootstrapping.push_back(Pair("status", bootstrappingStatus));
     bootstrapping.push_back(Pair("walletstatus", walletStatus));
+
     if (bootstrappingProgress == -1) {
         bootstrapping.push_back(Pair("progress", "none"));
     } else {
@@ -152,18 +156,56 @@ UniValue getinfo(const UniValue& params, bool fHelp)
         obj.push_back(Pair("keypoololdest", pwalletMain->GetOldestKeyPoolTime()));
         obj.push_back(Pair("keypoolsize", (int)pwalletMain->GetKeyPoolSize()));
     }
+
     if (pwalletMain && pwalletMain->IsCrypted())
         obj.push_back(Pair("unlocked_until", nWalletUnlockTime));
+
     obj.push_back(Pair("paytxfee", ValueFromAmount(payTxFee.GetFeePerK())));
 #endif
+
     obj.push_back(Pair("relayfee", ValueFromAmount(::minRelayTxFee.GetFeePerK())));
     bool nStaking = false;
+
     if (mapHashedBlocks.count(chainActive.Tip()->nHeight))
         nStaking = true;
     else if (mapHashedBlocks.count(chainActive.Tip()->nHeight - 1) && nLastCoinStakeSearchInterval)
         nStaking = true;
+
     obj.push_back(Pair("staking status", (nStaking ? "Staking Active" : "Staking Not Active")));
     obj.push_back(Pair("errors", GetWarnings("statusbar")));
+
+    return obj;
+}
+
+UniValue getbootstrappinginfo(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() != 0) {
+        throw runtime_error(
+            "getbootstrappinginfo\n"
+            "\nReturns bootstrapping information (downloads, syncing and other actions the daemon does).\n"
+
+            "\nResult:\n"
+            "{\n"
+            "  \"status\": \"status\",      (string) Status of the bootstrapping process\n"
+            "  \"walletstatus\": \"status\", (string) Status of the wallet\n"
+            "  \"progress\": \"xxxx\", (numeric) If available, progress of the current bootstrapping step\n"
+            "}\n"
+
+            "\nExamples:\n" +
+            HelpExampleCli("getbootstrappinginfo", "") + HelpExampleRpc("getbootstrappinginfo", ""));
+    }
+
+    UniValue obj(UniValue::VOBJ);
+
+    obj.push_back(Pair("status", bootstrappingStatus));
+    obj.push_back(Pair("walletstatus", walletStatus));
+
+    if (bootstrappingProgress == -1) {
+        obj.push_back(Pair("progress", "none"));
+    } else {
+        obj.push_back(Pair("progress", bootstrappingProgress));
+    }
+
     return obj;
 }
 
