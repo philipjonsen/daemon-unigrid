@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import array
 import binascii
 import zmq
 import struct
