@@ -85,7 +85,8 @@ def tree_sha512sum(commit='HEAD'):
     for line in subprocess.check_output([GIT, 'ls-tree', '--full-tree', '-r', commit]).splitlines():
         name_sep = line.index(b'\t')
         metadata = line[:name_sep].split() # perms, 'blob', blobid
-        assert(metadata[1] == b'blob')
+        if (metadata[1] != b'blob'):
+            raise AssertionError
         name = line[name_sep+1:]
         files.append(name)
         blob_by_name[name] = metadata[2]
@@ -102,7 +103,8 @@ def tree_sha512sum(commit='HEAD'):
         p.stdin.flush()
         # read header: blob, "blob", size
         reply = p.stdout.readline().split()
-        assert(reply[0] == blob and reply[1] == b'blob')
+        if not (reply[0] == blob and reply[1] == b'blob'):
+            raise AssertionError
         size = int(reply[2])
         # hash the blob data
         intern = hashlib.sha512()
@@ -116,7 +118,8 @@ def tree_sha512sum(commit='HEAD'):
                 raise IOError('Premature EOF reading git cat-file output')
             ptr += bs
         dig = intern.hexdigest()
-        assert(p.stdout.read(1) == b'\n') # ignore LF that follows blob data
+        if (p.stdout.read(1) != b'\n'):
+            raise AssertionError
         # update overall hash with file hash
         overall.update(dig.encode("utf-8"))
         overall.update("  ".encode("utf-8"))
