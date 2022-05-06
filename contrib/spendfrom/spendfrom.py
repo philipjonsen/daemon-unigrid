@@ -253,7 +253,7 @@ def main():
     else:
         fee = Decimal(options.fee)
         amount = Decimal(options.amount)
-        while unlock_wallet(unigridd) == False:
+        while unlock_wallet(unigridd) is False:
             pass # Keep asking for passphrase until they get it right
         txdata = create_tx(unigridd, options.fromaddresses.split(","), options.to, amount, fee)
         sanity_test_fee(unigridd, txdata, amount*Decimal("0.01"))
