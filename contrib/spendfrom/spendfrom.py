@@ -15,7 +15,6 @@
 
 from decimal import *
 import getpass
-import math
 import os
 import os.path
 import platform
