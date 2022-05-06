@@ -111,7 +111,7 @@ def list_available(unigridd):
 
         # This code only deals with ordinary pay-to-unigrid-address
         # or pay-to-script-hash outputs right now; anything exotic is ignored.
-        if pk["type"] != "pubkeyhash" and pk["type"] != "scripthash":
+        if pk["type"] not in ("pubkeyhash", "scripthash"):
             continue
 
         address = pk["addresses"][0]

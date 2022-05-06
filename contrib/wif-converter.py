@@ -135,7 +135,7 @@ def wifChecksum(wif, verbose=False) :
         print("4 bytes check: " + str(bytes_check))
 
     check_sum = False
-    if bytes_check and (byte_str[0:2] == "ef" or byte_str[0:2] == "99"):
+    if bytes_check and byte_str[0:2] in ("ef", "99"):
         check_sum = True
 
     if verbose:

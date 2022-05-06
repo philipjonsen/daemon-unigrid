@@ -52,7 +52,7 @@ def get_ELF_program_headers(executable):
                 ofs_offset = line.find('Offset')
                 ofs_flags = line.find('Flg')
                 ofs_align = line.find('Align')
-                if ofs_typ == -1 or ofs_offset == -1 or ofs_flags == -1 or ofs_align  == -1:
+                if -1 in (ofs_typ, ofs_offset, ofs_flags, ofs_align):
                     raise ValueError('Cannot parse elfread -lW output')
             elif count > 1:
                 typ = line[ofs_typ:ofs_offset].rstrip()
