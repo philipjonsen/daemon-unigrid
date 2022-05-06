@@ -56,7 +56,7 @@ def name_to_ipv6(addr):
         addr = addr.split(':')
         for i,comp in enumerate(addr):
             if comp == '':
-                if i == 0 or i == (len(addr)-1): # skip empty component at beginning or end
+                if i in (0, (len(addr)-1)): # skip empty component at beginning or end
                     continue
                 x += 1 # :: skips to suffix
                 if (x >= 2):
